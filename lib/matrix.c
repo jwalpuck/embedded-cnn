@@ -71,7 +71,6 @@ void matrix_free(Matrix *mat) {
     for(i = 0; i < mat->rows; i++) {
       free(mat->m[i]);
     }
-    free(mat->m);
     mat->m = NULL;
   }
 }
@@ -218,4 +217,20 @@ Matrix matrix_subtract(Matrix *left, Matrix *right) {
     }
   }
   return ret;
+}
+
+/* Append a column of ones to the end of the given matrix (in place) */
+void append_ones(Matrix *mat) {
+  int i, j;
+  Matrix temp = emptyMatrix;
+  matrix_copy(&temp, mat);
+  matrix_free(mat);
+
+  matrix_init(mat, temp.rows, temp.cols+1);
+  for(i = 0; i < temp.rows; i++) {
+    for(j = 0; j < temp.cols+1; j++) {
+      mat->m[i][j] = j != temp.cols ? temp.m[i][j] : 1;
+    }
+  }
+  matrix_free(&temp);
 }

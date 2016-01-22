@@ -55,4 +55,7 @@ float matrix_sum(Matrix *mat);
 /* Element-wise subtraction of two mxn matrices */
 Matrix matrix_subtract(Matrix *left, Matrix *right);
 
+/* Append a column of ones to the end of the given matrix (in place) */
+void append_ones(Matrix *mat);
+
 #endif

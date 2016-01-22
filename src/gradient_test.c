@@ -14,12 +14,14 @@
 int main(int argc, char *argv[]) {
   int i;
   Neural_Network test;
-  int numHiddenLayers = 1; //4
+  int numHiddenLayers = 2; //4
   int inputLayerSize = 2 + 1; //+1 for bias
   int outputLayerSize = 1;
   int numInputTuples = 3;
-  float initialCost, finalCost;
+  float initialCost, finalCost, learningRate;
   Matrix input, expected_output, *gradient, output1, output2;
+
+  learningRate = 0.3;
 
   //Create input matrix, being sure to normalize
   matrix_init(&input, numInputTuples, inputLayerSize);
@@ -41,9 +43,9 @@ int main(int argc, char *argv[]) {
   expected_output.m[2][0] = 0.93;
 
   //Assign hidden layer sizes
-  int *hiddenLayerSizes = malloc(sizeof(int) * numHiddenLayers); //Size 1 for test
+  int *hiddenLayerSizes = malloc(sizeof(int) * numHiddenLayers);
   hiddenLayerSizes[0] = 3;
-  /* hiddenLayerSizes[1] = 4; */
+  hiddenLayerSizes[1] = 4;
   /* hiddenLayerSizes[2] = 8; */
   /* hiddenLayerSizes[3] = 2; */
 
@@ -76,18 +78,17 @@ int main(int argc, char *argv[]) {
   initialCost = cost_fn(&test, &input, &expected_output);
 
   for(i = 0; i < 100000; i++) {
-    //printf("i = %d\n", i);
     //Compute numerical gradient
+    //printf("%d\n", i);
     gradient = cost_fn_prime(&test, &input, &expected_output);
-
     /* printf("$$$$$$$$$$$ GRADIENT $$$$$$$$$$$$\n"); */
     /* for(i = 0; i < test.numHiddenLayers + 1; i++) { */
     /*   printf("W%d\n", i+1); */
     /*   matrix_print(&gradient[i], stdout);  */
     /* } */
-
+    
     //Modify the weights according to the gradient
-    nn_updateWeights(&test, gradient);
+    nn_updateWeights(&test, gradient, learningRate);
     matrix_free(gradient); //Prevent memory leak
   }
 

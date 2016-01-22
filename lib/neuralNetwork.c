@@ -25,6 +25,7 @@ void nn_init(Neural_Network *net, int numInputs, int numOutputs, int numHiddenLa
 
   //Need one weight matrix for input layer, then one for each hidden layer
   net->weights = malloc(sizeof(Matrix) * (1 + net->numHiddenLayers));
+  
   nn_generateWeights(net);
 }
 
@@ -42,7 +43,7 @@ void nn_free(Neural_Network *net) {
 
 /* Initialize a neural network with a pre-existing set of weights */
 void nn_initWithWeights(Neural_Network *net, int numInputs, int numOutputs,
-		     int numHiddenLayers, int *hiddenLayerSizes, Matrix *weights) {
+			int numHiddenLayers, int *hiddenLayerSizes, Matrix *weights) {
   int i;
 
   net->inputLayerSize = numInputs;
@@ -70,8 +71,9 @@ void nn_generateWeights(Neural_Network *net) {
   /* Weights for inputs --> hidden layer
    * Matrices need to be of size currentLayerNeurons x nextLayerNeurons
    */
-  rows = net->inputLayerSize;
+  rows = net->inputLayerSize + 1; //Bottom row is for bias weights
   cols = net->hiddenLayerSizes[0];
+  
   matrix_init(&(net->weights[0]), rows, cols);
   for(i = 0; i < rows; i++) {
     for(j = 0; j < cols; j++) {
@@ -83,7 +85,7 @@ void nn_generateWeights(Neural_Network *net) {
   
   //Weights for hidden layers --> hidden layers
   for(i = 0; i < net->numHiddenLayers - 1; i++) {
-    rows = net->hiddenLayerSizes[i];
+    rows = net->hiddenLayerSizes[i] + 1; //Bottom row is for bias weights
     cols = net->hiddenLayerSizes[i+1];
     matrix_init(&(net->weights[i+1]), rows, cols);
     for(j = 0; j < rows; j++) {
@@ -122,6 +124,7 @@ Matrix nn_forward(Neural_Network *net, Matrix *inputs) {
   
   //Now operate on hidden layers
   for(i = 0; i < net->numHiddenLayers; i++) {
+    append_ones(&metro1);
     metro2 = matrix_multiply_slow(&metro1, &(net->weights[i+1]));
     sigmoid_matrix(&metro2);
     matrix_copy(&metro1, &metro2);
@@ -183,12 +186,12 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **zloc, M
 }
 
 /* Subtracts all gradients from the current weights of the neural network */
-void nn_updateWeights(Neural_Network *net, Matrix *gradients) {
+void nn_updateWeights(Neural_Network *net, Matrix *gradients, float learningRate) {
   int i, j, n;
   for(n = 0; n < net->numHiddenLayers + 1; n++) {
     for(i = 0; i < gradients[n].rows; i++) {
       for(j = 0; j < gradients[n].cols; j++) {
-	net->weights[n].m[i][j] -= gradients[n].m[i][j];
+	net->weights[n].m[i][j] -= gradients[n].m[i][j] * learningRate;
       }
     }
   }

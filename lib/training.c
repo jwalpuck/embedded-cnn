@@ -84,7 +84,6 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
     matrix_free(&temp_weights);
     matrix_free(&temp);
   }
-  
   //Final term (use input matrix)::
   //Copy the weights and inputs to be transposed
   matrix_copy(&temp_weights, &(net->weights[1]));
@@ -98,7 +97,7 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
   delta[0] = matrix_multiply_slow(&temp, &z[0]);
   //Equation: dcdW_1 = inputs.T * delta2
   dCdW[0] = matrix_multiply_slow(&temp_inputs, &delta[0]);
-  
+
   //Clean up the local variables
   for(i = 0; i < net->numHiddenLayers + 1; i++) {
     matrix_free(&delta[i]);
@@ -112,9 +111,12 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
   matrix_free(&temp_weights);
   matrix_free(&temp_inputs);
   matrix_free(&temp);
-  free(delta);
-  free(z);
-  free(a);
+
+  //Don't think these calls to free() are necessary because they have all been freed
+  //at an address [0] meaning it is the root address + 0, so it should work like that
+  //free(delta);
+  //free(z);
+  //free(a);
   
   return dCdW;
 }						     
