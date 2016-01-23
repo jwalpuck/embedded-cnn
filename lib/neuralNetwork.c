@@ -35,7 +35,7 @@ void nn_free(Neural_Network *net) {
     if(net->weights) {
       int i;
       for(i = 0; i < net->numHiddenLayers + 1; i++) {
-	matrix_free(&(net->weights[i]));
+		matrix_free(&(net->weights[i]));
       }
     }
   }
@@ -114,12 +114,14 @@ void nn_generateWeights(Neural_Network *net) {
 /* Forward propogate inputs through the network and return the output vector */
 Matrix nn_forward(Neural_Network *net, Matrix *inputs) {
   int i;
-  Matrix metro1, metro2; //The matrices that will traverse the network
-
+  Matrix metro1, metro2, temp_inputs; //The matrices that will traverse the network
+  temp_inputs = emptyMatrix;
   //Forward propagate---
 
-  //First operate on input layer	       
-  metro1 = matrix_multiply_slow(inputs, &(net->weights[0]));
+  //First operate on input layer
+  matrix_copy(&temp_inputs, inputs);
+  append_ones(&temp_inputs);	       
+  metro1 = matrix_multiply_slow(&temp_inputs, &(net->weights[0]));
   sigmoid_matrix(&metro1);
   
   //Now operate on hidden layers
@@ -143,21 +145,20 @@ Matrix nn_forward(Neural_Network *net, Matrix *inputs) {
    from each layer */
 Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **zloc, Matrix **aloc) {
   int i;
-  Matrix metro1, metro2; //The matrices that will traverse the network
+  Matrix metro1, metro2, temp_inputs; //The matrices that will traverse the network
   Matrix *z, *a;
   z = malloc(sizeof(Matrix) * net->numHiddenLayers + 1);
   a = malloc(sizeof(Matrix) * (net->numHiddenLayers));
   *zloc = z;
   *aloc = a;
   for(i = 0; i < net->numHiddenLayers + 1; i++) {
-    //Matrix emptyMatrix = {0, 0, NULL};
     z[i] = emptyMatrix; //This may be a problem. If so, use macro instead
                              // #define EMPTY_MATRIX {0, 0, NULL}
     if(i != net->numHiddenLayers) {
       a[i] = emptyMatrix;
     }
   }
-
+	temp_inputs = emptyMatrix;
   //Forward propagate---
   
   //See modifications to nn_forward
@@ -166,9 +167,14 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **zloc, M
   
   
   //First operate on input layer
-  metro1 = matrix_multiply_slow(inputs, &(net->weights[0]));
+  matrix_copy(&temp_inputs, inputs);
+  append_ones(&temp_inputs);
+  metro1 = matrix_multiply_slow(&temp_inputs, &(net->weights[0]));
   matrix_copy(&z[0], &metro1); 
   sigmoid_matrix(&metro1);
+  if(net->numHiddenLayers > 1) {
+  	append_ones(&metro1); //Homogeneous coordinates for biases
+  }
   matrix_copy(&a[0], &metro1);
   
   //Now operate on hidden layers
@@ -176,12 +182,18 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **zloc, M
     metro2 = matrix_multiply_slow(&metro1, &(net->weights[i]));
     matrix_copy(&z[i], &metro2);
     sigmoid_matrix(&metro2);
+    
+    //printf("Copying\n");
     if(i != net->numHiddenLayers) { //Do not copy output matrix into sigmoid activity
+      if(i != net->numHiddenLayers - 1) { //Do not append 1's to activity going into output layer
+      	append_ones(&metro2); //Homogeneous coordinates for biases
+      }
       matrix_copy(&a[i], &metro2);
+      //printf("copied matrix a: %dx%d\n", a[i].rows, a[i].cols);
     }
     matrix_copy(&metro1, &metro2);
   }
-  
+  //printf("Returning\n");
   return metro1;
 }
 
@@ -189,9 +201,10 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **zloc, M
 void nn_updateWeights(Neural_Network *net, Matrix *gradients, float learningRate) {
   int i, j, n;
   for(n = 0; n < net->numHiddenLayers + 1; n++) {
+  	//printf("Layer %d, net: %dx%d, gradient: %dx%d\n", n, net->weights[n].rows, net->weights[n].cols, gradients[n].rows, gradients[n].cols);
     for(i = 0; i < gradients[n].rows; i++) {
       for(j = 0; j < gradients[n].cols; j++) {
-	net->weights[n].m[i][j] -= gradients[n].m[i][j] * learningRate;
+		net->weights[n].m[i][j] -= gradients[n].m[i][j] * learningRate;
       }
     }
   }

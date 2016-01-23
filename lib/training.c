@@ -84,6 +84,9 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
     matrix_free(&temp_weights);
     matrix_free(&temp);
   }
+  
+  //printf("out of loop\n");
+  
   //Final term (use input matrix)::
   //Copy the weights and inputs to be transposed
   matrix_copy(&temp_weights, &(net->weights[1]));
@@ -106,6 +109,7 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
       matrix_free(&a[i]);
     }
   }
+  //printf("Cleaned up vars in loop\n");
   matrix_free(&actual_outputs);
   matrix_free(&difference);
   matrix_free(&temp_weights);
@@ -117,7 +121,7 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
   //free(delta);
   //free(z);
   //free(a);
-  
+  //printf("returning\n");
   return dCdW;
 }						     
 						     

@@ -14,8 +14,8 @@
 int main(int argc, char *argv[]) {
   int i;
   Neural_Network test;
-  int numHiddenLayers = 2; //4
-  int inputLayerSize = 2 + 1; //+1 for bias
+  int numHiddenLayers = 1; //4
+  int inputLayerSize = 2; //+1 for bias
   int outputLayerSize = 1;
   int numInputTuples = 3;
   float initialCost, finalCost, learningRate;
@@ -27,13 +27,10 @@ int main(int argc, char *argv[]) {
   matrix_init(&input, numInputTuples, inputLayerSize);
   input.m[0][0] = (float)3 / 10;
   input.m[0][1] = (float)5 / 5;
-  input.m[0][2] = (float)1; //Bias
   input.m[1][0] = (float)5 / 10;
   input.m[1][1] = (float)1 / 5;
-  input.m[1][2] = (float)5 / 5; //Bias
   input.m[2][0] = (float)10 / 10;
   input.m[2][1] = (float)2 / 5;
-  input.m[2][2] = (float)1; //Bias
   
 
   //Create expected output matrix
@@ -45,9 +42,9 @@ int main(int argc, char *argv[]) {
   //Assign hidden layer sizes
   int *hiddenLayerSizes = malloc(sizeof(int) * numHiddenLayers);
   hiddenLayerSizes[0] = 3;
-  hiddenLayerSizes[1] = 4;
-  /* hiddenLayerSizes[2] = 8; */
-  /* hiddenLayerSizes[3] = 2; */
+  //hiddenLayerSizes[1] = 4;
+// hiddenLayerSizes[2] = 8;
+// hiddenLayerSizes[3] = 2;
 
   /**** Test generating random weights ****/
   //Initialize the neural network with assigned parameters
@@ -79,16 +76,16 @@ int main(int argc, char *argv[]) {
 
   for(i = 0; i < 100000; i++) {
     //Compute numerical gradient
-    //printf("%d\n", i);
     gradient = cost_fn_prime(&test, &input, &expected_output);
-    /* printf("$$$$$$$$$$$ GRADIENT $$$$$$$$$$$$\n"); */
-    /* for(i = 0; i < test.numHiddenLayers + 1; i++) { */
-    /*   printf("W%d\n", i+1); */
-    /*   matrix_print(&gradient[i], stdout);  */
-    /* } */
+// 	printf("$$$$$$$$$$$ GRADIENT $$$$$$$$$$$$\n");
+// 	for(i = 0; i < test.numHiddenLayers + 1; i++) {
+// 	  printf("W%d\n", i+1);
+// 	  matrix_print(&gradient[i], stdout); 
+// 	}
     
     //Modify the weights according to the gradient
     nn_updateWeights(&test, gradient, learningRate);
+    //printf("updated weights\n");
     matrix_free(gradient); //Prevent memory leak
   }
 
