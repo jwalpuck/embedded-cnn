@@ -26,16 +26,16 @@ LIBS = -lm -limageIO
 LFLAGS = -L$(LIBDIR)
 
 # put all of the relevant include files here
-_DEPS = matrix.h vector.h neuralNetwork.h training.h
+_DEPS = matrix.h vector.h neuralNetwork.h training.h file_parser.h
 
 # convert them to point to the right place
 DEPS = $(patsubst %,$(INCDIR)/%,$(_DEPS))
 
 # put a list of the executables here
-EXECUTABLES = matrix_test nn_structureTest nn_forwardPropTest gradient_test
+EXECUTABLES = matrix_test nn_structureTest nn_forwardPropTest gradient_test file_parserTest
 
 # put a list of all the object files here for all executables (with .o endings)
-_OBJ = matrix_test.o nn_structureTest.o nn_forwardPropTest.o gradient_test.o
+_OBJ = matrix_test.o nn_structureTest.o nn_forwardPropTest.o gradient_test.o file_parserTest.o
 
 # convert them to point to the right place
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
@@ -67,6 +67,9 @@ nn_forwardPropTest: $(ODIR)/nn_forwardPropTest.o
 	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 gradient_test: $(ODIR)/gradient_test.o
+	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	
+file_parserTest: $(ODIR)/file_parserTest.o
 	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 .PHONY: clean
