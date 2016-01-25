@@ -37,6 +37,9 @@ void matrix_copy(Matrix *dest, Matrix *src);
 /* Transpose the matrix m in place */
 void matrix_transpose(Matrix *mat);
 
+/* Normalize each column in the matrix individually */
+void matrix_normalize_columns(Matrix *mat);
+
 /* Negate all elements in the parameterized matrix */
 void matrix_negate(Matrix *mat);
 

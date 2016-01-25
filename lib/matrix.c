@@ -119,6 +119,33 @@ void matrix_transpose(Matrix *mat) {
   }
 }
 
+/* Normalize each column in the matrix individually */
+void matrix_normalize_columns(Matrix *mat) {
+	int i, j;
+	float max[mat->cols];
+	
+	//Initialize max values with first row
+	for(j = 0; j < mat->cols; j++) {
+		max[j] = mat->m[0][j];
+	}
+	
+	//Search for max values
+	for(i = 1; i < mat->rows; i++) {
+		for(j = 0; j < mat->cols; j++) {
+			if(mat->m[i][j] > max[j]) {
+				max[j] = mat->m[i][j];
+			}
+		}
+	}
+	
+	//Divide all entries in the matrix by their column's maximum
+	for(i = 0; i < mat->rows; i++) {
+		for(j = 0; j < mat->cols; j++) {
+			mat->m[i][j] /= max[j];
+		}
+	}
+}
+
 /* Negate all elements in the parameterized matrix */
 void matrix_negate(Matrix *mat) {
   int i, j;

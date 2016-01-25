@@ -12,7 +12,10 @@
  */
 void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs);
 
+/* Return the number of lines in the file at the parameterized path */
+int count_lines(char *fileName);
+
 /* Returns the address of an array of strings with each index containing a line from the input file */
-void get_raw_text(char *fileName, char ***raw_text_ptr, int *numLines);
+void get_raw_text(char *fileName, char **raw_text, int numLines);
 
 #endif
