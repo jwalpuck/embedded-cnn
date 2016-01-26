@@ -16,11 +16,16 @@
 /* Allocate a 2D array of size rowsxcols and fill it with zeros */
 void matrix_init(Matrix *mat, int rows, int cols) {
   int j;
-  
+
+  //printf( "mat is %p, &(mat->rows) is %p, mat->rows %d, mat->m %p, &(mat->m) %p\n", mat, &(mat->rows), mat->rows, mat->m, &(mat->m) );
+
   mat->rows = rows;
   mat->cols = cols;
+
+  //printf("New dimensions: %dx%d\n", mat->rows, mat->cols);
   
   //Create an empty 2D array within the matrix
+  //printf("Attempting allocated at %p, %p\n", mat->m, mat);
   mat->m = malloc(sizeof(float *) * rows);
   for(j = 0; j < rows; j++) {
     mat->m[j] = calloc(cols, sizeof(float));
@@ -68,11 +73,18 @@ void matrix_clear(Matrix *mat) {
 void matrix_free(Matrix *mat) {
   int i;
   if(mat->m){
+    //printf("Freeing %p\n", mat);
     for(i = 0; i < mat->rows; i++) {
       free(mat->m[i]);
     }
+    //printf("Freeing outer array\n");
+    free(mat->m);
+    //printf("Freed outer array\n");
     mat->m = NULL;
+    //printf("Freed\n");
   }
+  mat->rows = 0;
+  mat->cols = 0;
 }
 
 /* Return the element of the matrix at row r, column c */
@@ -90,12 +102,14 @@ void matrix_copy(Matrix *dest, Matrix *src) {
   int i, j;
 
   matrix_free(dest);
-  dest->rows = src->rows;
-  dest->cols = src->cols;
-  matrix_init(dest, dest->rows, dest->cols);
+  //printf("Freed dest\n");
+  //printf("About to initialize %dx%d matrix\n", src->rows, src->cols);
+  matrix_init(dest, src->rows, src->cols);
+  //printf("Initialized matrix\n");
   
   for(i = 0; i < src->rows; i++) {
     for(j = 0; j < src->cols; j++) {
+      //printf("(%d,%d)\n", src->rows, src->cols);
       dest->m[i][j] = src->m[i][j];
     }
   }
@@ -107,10 +121,13 @@ void matrix_transpose(Matrix *mat) {
   Matrix copy = emptyMatrix;
   int i, j;
   matrix_copy(&copy, mat);
-  
+  printf("Copied mat (%p): %dx%d into copy(%p)\n", mat, mat->rows, mat->cols, &copy);
+  //matrix_print(&mat, stdout);
   //Change the dimensions of mat to be nxm instead of mxn
   matrix_free(mat);
+  printf("Freed mat\n");
   matrix_init(mat, copy.cols, copy.rows);
+  printf("Re-initialized mat\n");
   
   for(i = 0; i < mat->rows; i++) {
     for(j = 0; j < mat->cols; j++) {
@@ -207,7 +224,6 @@ Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
       }
     }
   }
-
   return mat;
 }
 

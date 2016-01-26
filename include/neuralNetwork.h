@@ -31,7 +31,7 @@ Matrix nn_forward(Neural_Network *net, Matrix *inputs);
 
 /* Forward propogate inputs through the network, return ouput and activity matrices
    from each layer */
-Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **z, Matrix **a);
+Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matrix *a);
 
 /* Subtracts all gradients from the current weights of the neural network */
 void nn_updateWeights(Neural_Network *net, Matrix *gradients, float learningRate);

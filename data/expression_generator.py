@@ -4,9 +4,10 @@ from __future__ import print_function
 import sys
 from random import random
 
-f = open(sys.argv[1],'w')
+numLines = int(sys.argv[1])
+f = open(sys.argv[2],'w')
 
-for i in range (0, 10): #1000
+for i in range (0, numLines):
 	a = random() * 4
 	b = random() * 4
 	c = a + b

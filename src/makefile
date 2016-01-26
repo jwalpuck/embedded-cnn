@@ -32,10 +32,10 @@ _DEPS = matrix.h vector.h neuralNetwork.h training.h file_parser.h
 DEPS = $(patsubst %,$(INCDIR)/%,$(_DEPS))
 
 # put a list of the executables here
-EXECUTABLES = matrix_test nn_structureTest nn_forwardPropTest gradient_test file_parserTest arithmetic_test
+EXECUTABLES = matrix_test matrix_test2 nn_structureTest nn_forwardPropTest gradient_test file_parserTest arithmetic_test
 
 # put a list of all the object files here for all executables (with .o endings)
-_OBJ = matrix_test.o nn_structureTest.o nn_forwardPropTest.o gradient_test.o file_parserTest.o arithmetic_test.o
+_OBJ = matrix_test.o matrix_test2.o nn_structureTest.o nn_forwardPropTest.o gradient_test.o file_parserTest.o arithmetic_test.o
 
 # convert them to point to the right place
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
@@ -60,6 +60,9 @@ all:
 matrix_test: $(ODIR)/matrix_test.o
 	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
+matrix_test2: $(ODIR)/matrix_test2.o
+	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+
 nn_structureTest: $(ODIR)/nn_structureTest.o
 	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
@@ -68,10 +71,10 @@ nn_forwardPropTest: $(ODIR)/nn_forwardPropTest.o
 
 gradient_test: $(ODIR)/gradient_test.o
 	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
-	
+
 file_parserTest: $(ODIR)/file_parserTest.o
 	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
-	
+
 arithmetic_test: $(ODIR)/arithmetic_test.o
 	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
