@@ -61,4 +61,7 @@ Matrix matrix_subtract(Matrix *left, Matrix *right);
 /* Append a column of ones to the end of the given matrix (in place) */
 void append_ones(Matrix *mat);
 
+/* Truncates the mat->rows'th row off of mat in place */
+void matrix_truncate_row(Matrix *mat);
+
 #endif

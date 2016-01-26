@@ -189,6 +189,11 @@ Matrix matrix_multiply_fast(Matrix *left, Matrix *right) {
 /* Multiply left and right and put the result in mat */
 Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
 
+	if(left->cols != right->rows) {
+		printf("Dimensionality error: left %dx%d, right %dx%d\n", left->rows, left->cols, right->rows, right->cols);
+		exit(-1);
+	}
+
   int i, j, k;
   Matrix temp = emptyMatrix, mat;
   matrix_init(&mat, left->rows, right->cols); //Matrix to return
@@ -208,6 +213,11 @@ Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
 
 /* Perform element-wise multiplication between two matrices */
 Matrix matrix_element_multiply(Matrix *left, Matrix *right) {
+	if(!(left->rows == right->rows && left->cols == right->cols)) {
+		printf("Error in element_multiply: left = %dx%d, right = %dx%d\n", left->rows, left->cols, right->rows, right->cols);
+		exit(-1);
+	}
+	//printf("**In element_multiply: left = %dx%d, right = %dx%d\n", left->rows, left->cols, right->rows, right->cols);
   int i, j;
   Matrix ret;
   matrix_init(&ret, left->rows, left->cols);
@@ -260,4 +270,10 @@ void append_ones(Matrix *mat) {
     }
   }
   matrix_free(&temp);
+}
+
+/* Truncates the mat->rows'th row off of mat in place */
+void matrix_truncate_row(Matrix *mat) {
+	free(mat->m[mat->rows-1]);
+	mat->rows--;
 }

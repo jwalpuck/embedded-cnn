@@ -18,6 +18,8 @@
 void nn_init(Neural_Network *net, int numInputs, int numOutputs, int numHiddenLayers,
 	  int *hiddenLayerSizes) {
   
+  int i;
+  
   net->inputLayerSize = numInputs;
   net->outputLayerSize = numOutputs;
   net->numHiddenLayers = numHiddenLayers;
@@ -27,6 +29,10 @@ void nn_init(Neural_Network *net, int numInputs, int numOutputs, int numHiddenLa
   net->weights = malloc(sizeof(Matrix) * (1 + net->numHiddenLayers));
   
   nn_generateWeights(net);
+  
+  for(i = 0; i < 1+net->numHiddenLayers; i++) {
+  	printf("Matrix %d is %dx%d\n", i, net->weights[i].rows, net->weights[i].cols);
+  }
 }
 
 /* Free the dynamically allocated memory in the neural network */
@@ -124,9 +130,14 @@ Matrix nn_forward(Neural_Network *net, Matrix *inputs) {
   metro1 = matrix_multiply_slow(&temp_inputs, &(net->weights[0]));
   sigmoid_matrix(&metro1);
   
+  printf("Multiplied input: %dx%d\n", metro1.rows, metro1.cols);
+  
   //Now operate on hidden layers
   for(i = 0; i < net->numHiddenLayers; i++) {
-    append_ones(&metro1);
+  	if(i != net->numHiddenLayers-1) {
+    	append_ones(&metro1);
+    }
+    printf("Current dimension: %dx%d\n", metro1.rows, metro1.cols);
     metro2 = matrix_multiply_slow(&metro1, &(net->weights[i+1]));
     sigmoid_matrix(&metro2);
     matrix_copy(&metro1, &metro2);
@@ -166,6 +177,8 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **zloc, M
   //Reassign pointers and make other pointers null, be sure not to leak memory
   
   
+  //printf("Beginning forward propagation\n");
+  
   //First operate on input layer
   matrix_copy(&temp_inputs, inputs);
   append_ones(&temp_inputs);
@@ -179,6 +192,7 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix **zloc, M
   
   //Now operate on hidden layers
   for(i = 1; i < net->numHiddenLayers + 1; i++) {
+  	//printf("At hidden layer %d\n", i);
     metro2 = matrix_multiply_slow(&metro1, &(net->weights[i]));
     matrix_copy(&z[i], &metro2);
     sigmoid_matrix(&metro2);
@@ -204,7 +218,8 @@ void nn_updateWeights(Neural_Network *net, Matrix *gradients, float learningRate
   	//printf("Layer %d, net: %dx%d, gradient: %dx%d\n", n, net->weights[n].rows, net->weights[n].cols, gradients[n].rows, gradients[n].cols);
     for(i = 0; i < gradients[n].rows; i++) {
       for(j = 0; j < gradients[n].cols; j++) {
-		net->weights[n].m[i][j] -= gradients[n].m[i][j] * learningRate;
+      //printf("%f - %f\n", net->weights[n].m[i][j], gradients[n].m[i][j]);
+		net->weights[n].m[i][j] -= (gradients[n].m[i][j] * learningRate);
       }
     }
   }

@@ -17,9 +17,11 @@ float cost_fn(Neural_Network *net, Matrix *inputs, Matrix *correct_outputs) {
   float cost;
 
   //Calculate the matrix part of the cost function
+  printf("Computing outputs for cost\n");
   actual_outputs = nn_forward(net, inputs);
+  printf("Computed outputs for cost\n");
   difference = matrix_subtract(correct_outputs, &actual_outputs);
-  difference_squared = matrix_multiply_slow(&difference, &difference); //Element-wise
+  difference_squared = matrix_element_multiply(&difference, &difference); //Element-wise
 
   //Calculate the scalar part of the cost function
   cost = 0.5 * matrix_sum(&difference_squared);
@@ -67,14 +69,22 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
 
   //Apply the chain rule
   for(i = net->numHiddenLayers - 1; i > 0; i--) {
+  	//printf("Operating on hidden layer %d\n", i);
     //Copy the weights to be transposed
     matrix_copy(&temp_weights, &(net->weights[i+1]));
+    
+    /* Account for the next layer's bias weights' lack of effect on the output of the current layer
+     * Note that this does not need to be done for the n-1'th layer, as there is no bias node going
+     *into the output layer */
+    if(i < net->numHiddenLayers - 1) {
+    	matrix_truncate_row(&temp_weights);
+    }
     matrix_transpose(&temp_weights);
     
     sigmoidPrime_matrix(&z[i]);
     temp = matrix_multiply_slow(&delta[i+1], &temp_weights);
-    //Equation: delta_m = (delta_m+1 * Wm) * sig_prime(z_m)
-    delta[i] = matrix_multiply_slow(&temp, &z[i]);
+    //Equation: delta_m = (delta_m+1 * Wm.T) .* sig_prime(z_m)
+    delta[i] = matrix_element_multiply(&temp, &z[i]);
 
     matrix_transpose(&a[i-1]);
     //Equation: dCdW_m-1 = a_m-1.T * delta_m
@@ -85,19 +95,19 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
     matrix_free(&temp);
   }
   
-  //printf("out of loop\n");
-  
   //Final term (use input matrix)::
   //Copy the weights and inputs to be transposed
   matrix_copy(&temp_weights, &(net->weights[1]));
   matrix_copy(&temp_inputs, inputs);
+  append_ones(&temp_inputs);
+  matrix_truncate_row(&temp_weights);
   matrix_transpose(&temp_weights);
   matrix_transpose(&temp_inputs);
 
   sigmoidPrime_matrix(&z[0]);
   temp = matrix_multiply_slow(&delta[1], &temp_weights);
-  //Equation: delta_2 = (delta_3 * W2.T) * sig_prime(z_2)
-  delta[0] = matrix_multiply_slow(&temp, &z[0]);
+  //Equation: delta_2 = (delta_3 * W2.T) .* sig_prime(z_2)
+  delta[0] = matrix_element_multiply(&temp, &z[0]);
   //Equation: dcdW_1 = inputs.T * delta2
   dCdW[0] = matrix_multiply_slow(&temp_inputs, &delta[0]);
 
