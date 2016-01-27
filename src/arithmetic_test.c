@@ -15,8 +15,8 @@
 int main(int argc, char *argv[]) {
   int i, j;
   Neural_Network test;
-  int numHiddenLayers = 4; //4
-  int inputLayerSize = 2; //+1 for bias
+  int numHiddenLayers = 4;
+  int inputLayerSize = 2;
   int outputLayerSize = 1;
   //int numInputTuples;
   float initialCost, finalCost, testInitialCost, testFinalCost, learningRate, *yhat, avg_yhat;
@@ -60,6 +60,10 @@ int main(int argc, char *argv[]) {
   hiddenLayerSizes[1] = 4;
   hiddenLayerSizes[2] = 8;
   hiddenLayerSizes[3] = 2;
+  //hiddenLayerSizes[4] = 12;
+  //hiddenLayerSizes[5] = 9;
+  /* hiddenLayerSizes[6] = 2; */
+  /* hiddenLayerSizes[7] = 10; */
 
   /**** Test generating random weights ****/
   //Initialize the neural network with assigned parameters
@@ -105,22 +109,19 @@ int main(int argc, char *argv[]) {
   for(i = 0; i < 10000; i++) { //100000
 
     //Report average yhat
-    /* if(i % 100 == 0) { */
-    /*   avg_yhat = 0; */
-    /*   for(j = 0; j < expected_output.rows; j++) { */
-    /* 	//	printf("Going into nn_forward\n"); */
-    /* 	testOutput = nn_forward(&test, &input2); */
-    /* 	avg_yhat += fabsf(expected_output2.m[j][0] - testOutput.m[j][0]); */
-    /*   } */
-    /*   avg_yhat /= 1000; */
-    /*   printf("Step %d: average error: %f(%.02f%%)\n", i, avg_yhat, avg_yhat * 100); */
-    /* } */
+    if(i % 100 == 0) {
+      avg_yhat = 0;
+      for(j = 0; j < expected_output.rows; j++) {
+    	testOutput = nn_forward(&test, &input2);
+    	avg_yhat += fabsf(expected_output2.m[j][0] - testOutput.m[j][0]);
+      }
+      avg_yhat /= 1000;
+      printf("Step %d: average error: %f(%.02f%%)\n", i, avg_yhat, avg_yhat * 100);
+    }
 
     //printf("Computing gradient %d\n", i);
     //Compute numerical gradient
-    printf("Computing gradient\n");
     gradient = cost_fn_prime(&test, &input, &expected_output);
-    printf("Updating weights\n");
     
     //     printf("%%%%%%Original weights:\n");
     //     for(j = 0; j < 4; j++) {
@@ -129,15 +130,13 @@ int main(int argc, char *argv[]) {
     
     //Modify the weights according to the gradient
     nn_updateWeights(&test, gradient, learningRate);
-    printf("Updated weights\n");
     //     printf("%%%%%%Updated weights:\n");
     //     for(j = 0; j < 4; j++) {
     //     	matrix_print(&(test.weights[j]), stdout);
     //     }
     
     matrix_free(gradient); //Prevent memory leak
-    printf("Freed gradient\n");
-    //matrix_free(&testOutput);
+    matrix_free(&testOutput);
   }
 
   //Compute the cost of the training data
@@ -158,37 +157,49 @@ int main(int argc, char *argv[]) {
   printf("Initial (test) cost: %f; Final (test) cost: %f\n", testInitialCost, testFinalCost);
 
   //*Optional: Show output
-  output2 = nn_forward(&test, &input);
-  printf("With initial (random) weights: \n");
-  matrix_print(&output1, stdout);
-  printf("With optimized weights: \n");
-  matrix_print(&output2, stdout);
+  /* output2 = nn_forward(&test, &input); */
+  /* printf("With initial (random) weights: \n"); */
+  /* matrix_print(&output1, stdout); */
+  /* printf("With optimized weights: \n"); */
+  /* matrix_print(&output2, stdout); */
 
-  printf("\n\n\n\nTraining answers:\n");
-  matrix_print(&expected_output2, stdout);
-  printf("Output answers\n");
-  matrix_print(&testOutput, stdout);
+  /* printf("\n\n\n\nTraining answers:\n"); */
+  /* matrix_print(&expected_output2, stdout); */
+  /* printf("Output answers\n"); */
+  /* matrix_print(&testOutput, stdout); */
 
   avg_yhat = 0;
   
   //Show yhat for the test data
   printf("\ny_hat for the test data:\n");
   for(i = 0; i < testOutput.rows; i++) {
-    printf("%f\n", yhat[i]);
+    //printf("%f\n", yhat[i]);
     avg_yhat += yhat[i];
   }
 
   avg_yhat /= 1000;
 
-  printf("Average error: %f(%f\%%\n", avg_yhat, avg_yhat*100);
+  printf("Average error: %f(%f\%%)\n", avg_yhat, avg_yhat*100);
   
   //Free the neural network
+  printf("Freeing neural net\n");
   nn_free(&test);
+  printf("Freeing input matrix 1\n");
   matrix_free(&input);
+  printf("Freeing input matrix 2\n");
+  matrix_free(&input2);
+  printf("Freeing expected output matrix 1\n");
   matrix_free(&expected_output);
+  printf("Freeing expected output matrix 2\n");
+  printf("Freeing output1\n");
   matrix_free(&output1);
-  matrix_free(&output2);
+  printf("Freeing output2\n");
+  //matrix_free(&output2);
   
   //Free local variables
+  printf("Freeing yhat\n");
   free(yhat);
+  printf("Done freeing -- exiting program\n");
+
+  return 0;
 }

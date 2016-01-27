@@ -44,16 +44,16 @@ void matrix_fill(Matrix *mat, float **data, int rows, int cols) {
 void matrix_print(Matrix *mat, FILE *fp) {
   if(fp) {
     int i, j;
-    fprintf(fp, "[");
+    //fprintf(fp, "[");
     for(i = 0; i < mat->rows; i++) {
       for(j = 0; j < mat->cols; j++) {
-	fprintf(fp, "%.9f, ", mat->m[i][j]);
+	//fprintf(fp, "%.9f, ", mat->m[i][j]);
       }
       if(i == mat->rows-1) {
-	fprintf(fp, "]]\n\n");
+	//fprintf(fp, "]]\n\n");
       }
       else{
-	fprintf(fp, "]\n");
+	//fprintf(fp, "]\n");
       }
     }
   }
@@ -121,13 +121,9 @@ void matrix_transpose(Matrix *mat) {
   Matrix copy = emptyMatrix;
   int i, j;
   matrix_copy(&copy, mat);
-  printf("Copied mat (%p): %dx%d into copy(%p)\n", mat, mat->rows, mat->cols, &copy);
-  //matrix_print(&mat, stdout);
   //Change the dimensions of mat to be nxm instead of mxn
   matrix_free(mat);
-  printf("Freed mat\n");
   matrix_init(mat, copy.cols, copy.rows);
-  printf("Re-initialized mat\n");
   
   for(i = 0; i < mat->rows; i++) {
     for(j = 0; j < mat->cols; j++) {
@@ -229,11 +225,11 @@ Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
 
 /* Perform element-wise multiplication between two matrices */
 Matrix matrix_element_multiply(Matrix *left, Matrix *right) {
-	if(!(left->rows == right->rows && left->cols == right->cols)) {
-		printf("Error in element_multiply: left = %dx%d, right = %dx%d\n", left->rows, left->cols, right->rows, right->cols);
-		exit(-1);
-	}
-	//printf("**In element_multiply: left = %dx%d, right = %dx%d\n", left->rows, left->cols, right->rows, right->cols);
+  if(!(left->rows == right->rows && left->cols == right->cols)) {
+    printf("Error in element_multiply: left = %dx%d, right = %dx%d\n", left->rows, left->cols, right->rows, right->cols);
+    exit(-1);
+  }
+
   int i, j;
   Matrix ret;
   matrix_init(&ret, left->rows, left->cols);

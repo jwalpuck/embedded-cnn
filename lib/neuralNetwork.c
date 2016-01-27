@@ -163,7 +163,6 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matri
   //z = *zloc;
   //a = *aloc;
   
-  printf("Location of emptyMatrix: %p\n", &emptyMatrix);
   for(i = 0; i < net->numHiddenLayers + 1; i++) {
     z[i] = emptyMatrix; //This may be a problem. If so, use macro instead
     //#define EMPTY_MATRIX {0, 0, NULL}
@@ -173,8 +172,6 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matri
   }
   temp_inputs = emptyMatrix;
   //Forward propagate---
-  printf("Location of temp_inputs: %p\n", &temp_inputs);
-  printf("temp_inputs.m is %p\n", temp_inputs.m);
   
   //See modifications to nn_forward
   //Do not copy, but do not free
@@ -184,24 +181,15 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matri
   //printf("Beginning forward propagation\n");
   
   //First operate on input layer
-  printf("Copying inputs at %p: %dx%d\n", inputs, inputs->rows, inputs->cols);
-  printf("Data at [500][1]: %f\n", inputs->m[500][1]);
-  printf("Dest (%p): %dx%d -- %p\n", &temp_inputs, temp_inputs.rows, temp_inputs.cols, temp_inputs.m);
   matrix_copy(&temp_inputs, inputs);
-  printf("Copied inputs\n");
   append_ones(&temp_inputs);
   metro1 = matrix_multiply_slow(&temp_inputs, &(net->weights[0]));
-  printf("Multiplied\n");
   matrix_copy(&z[0], &metro1);
-  printf("Applying sigmoid\n");
   sigmoid_matrix(&metro1);
-  printf("Appending ones\n");
   if(net->numHiddenLayers > 1) {
     append_ones(&metro1); //Homogeneous coordinates for biases
   }
   matrix_copy(&a[0], &metro1);
-
-  printf("Operating on hidden layers\n");
   
   //Now operate on hidden layers
   for(i = 1; i < net->numHiddenLayers + 1; i++) {
