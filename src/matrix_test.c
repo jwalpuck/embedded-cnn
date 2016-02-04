@@ -1,19 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "matrix.h"
-#include "vector.h"
-
-void test_matrices();
-void test_vectors();
 
 int main(int argc, char *argv[]) {
-  //printf("\n\n\n---TESTING MATRICES---\n");
-  test_matrices();
-  //printf("\n\n\n---TESTING VECTORS---\n");
-  test_vectors();
-}
-
-void test_matrices() {
   float **a1, **a2;
   int i, rows1, cols1, rows2, cols2;
   Matrix m1, m2, m3;
@@ -58,42 +47,22 @@ void test_matrices() {
 
   m3 = matrix_multiply_slow(&m1, &m2);
   matrix_print(&m3, stdout);
+
+  printf("Transposing m3\n");
+  matrix_transpose(&m2);
   
-  matrix_free(&m1);
+  matrix_free(&m1); //Freeing too little?
   matrix_free(&m2);
   matrix_free(&m3);
-}
 
-void test_vectors() {
-  Vector v1, v2;
-  float *data1, *data2, dotprod;
-  int length = 3;
-  vector_init(&v1, length);
-  vector_init(&v2, length);
+  /* for(i = 0; i < rows1; i++) { */
+  /*   free(a1[i]); //Freeing too little? */
+  /* } */
 
-  data1 = malloc(sizeof(float) * length);
-  data2 = malloc(sizeof(float) * length);
+  /* for(i = 0; i < rows2; i++) { */
+  /*   free(a2[i]); */
+  /* } */
 
-  data1[0] = 8.2;
-  data1[1] = 1.4;
-  data1[2] = 0.7;
-
-  data2[0] = 5.4;
-  data2[1] = 6.1;
-  data2[2] = 2.7;
-
-  vector_fill(&v1, data1, length);
-  vector_fill(&v2, data2, length);
-
-  dotprod = dot(&v1, &v2);
-  printf("The dot product of \n");
-  vector_print(&v1, stdout);
-  printf("and\n");
-  vector_print(&v2, stdout);
-  printf("is %f\n", dotprod);
-
-  vector_free(&v1);
-  vector_free(&v2);
-  free(data1);
-  free(data2);
+  /* free(a1); */
+  /* free(a2); */
 }

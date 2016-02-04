@@ -28,6 +28,9 @@ int main(int argc, char *argv[]) {
   printf("Freeing test2\n");
   matrix_free(&test2);
 
+
+  printf("test: %p, fac1: %p, fac2 = %p\n", &test, &fac1, &fac2);
+  
   matrix_init(&fac1, 1000, 2);
   matrix_init(&fac2, 1000, 2);
 
@@ -55,6 +58,8 @@ int main(int argc, char *argv[]) {
 
   printf("Freeing matrix\n");
   matrix_free(&a[3]);
+  matrix_free(&fac1);
+  matrix_free(&fac2);
 
   printf("Freeing a\n");
   free(a);

@@ -44,16 +44,16 @@ void matrix_fill(Matrix *mat, float **data, int rows, int cols) {
 void matrix_print(Matrix *mat, FILE *fp) {
   if(fp) {
     int i, j;
-    //fprintf(fp, "[");
+    fprintf(fp, "[");
     for(i = 0; i < mat->rows; i++) {
       for(j = 0; j < mat->cols; j++) {
-	//fprintf(fp, "%.9f, ", mat->m[i][j]);
+	fprintf(fp, "%.9f, ", mat->m[i][j]);
       }
       if(i == mat->rows-1) {
-	//fprintf(fp, "]]\n\n");
+	fprintf(fp, "]]\n\n");
       }
       else{
-	//fprintf(fp, "]\n");
+	fprintf(fp, "]\n");
       }
     }
   }
@@ -75,10 +75,10 @@ void matrix_free(Matrix *mat) {
   if(mat->m){
     //printf("Freeing %p\n", mat);
     for(i = 0; i < mat->rows; i++) {
-      free(mat->m[i]);
+      free(mat->m[i]); //For each row, free all of the columns
     }
     //printf("Freeing outer array\n");
-    free(mat->m);
+    free(mat->m); //Free the array of rows
     //printf("Freed outer array\n");
     mat->m = NULL;
     //printf("Freed\n");
@@ -130,6 +130,7 @@ void matrix_transpose(Matrix *mat) {
       mat->m[i][j] = copy.m[j][i];
     }
   }
+  matrix_free(&copy);
 }
 
 /* Normalize each column in the matrix individually */
@@ -202,10 +203,10 @@ Matrix matrix_multiply_fast(Matrix *left, Matrix *right) {
 /* Multiply left and right and put the result in mat */
 Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
 
-	if(left->cols != right->rows) {
-		printf("Dimensionality error: left %dx%d, right %dx%d\n", left->rows, left->cols, right->rows, right->cols);
-		exit(-1);
-	}
+  if(left->cols != right->rows) {
+    printf("Dimensionality error: left %dx%d, right %dx%d\n", left->rows, left->cols, right->rows, right->cols);
+    exit(-1);
+  }
 
   int i, j, k;
   Matrix temp = emptyMatrix, mat;
@@ -220,6 +221,9 @@ Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
       }
     }
   }
+
+  matrix_free(&temp);
+  
   return mat;
 }
 

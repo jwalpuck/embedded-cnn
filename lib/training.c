@@ -37,12 +37,7 @@ float cost_fn(Neural_Network *net, Matrix *inputs, Matrix *correct_outputs) {
  */
 Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outputs) {
   int i;
-  Matrix actual_outputs, difference, temp_weights, temp_inputs, temp, *z, *a, *dCdW, *delta, **zloc, **aloc;
-
-  /* z = NULL; */
-  /* a = NULL; */
-  /* zloc = &z; */
-  /* aloc = &a; */
+  Matrix actual_outputs, difference, temp_weights, temp_inputs, temp, *z, *a, *dCdW, *delta;
 
   z = malloc(sizeof(Matrix) * (net->numHiddenLayers + 1));
   a = malloc(sizeof(Matrix) * net->numHiddenLayers);

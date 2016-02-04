@@ -18,12 +18,15 @@ int main(int argc, char *argv[]) {
 	}
 	
 	fileName = argv[1];
-	file_to_matrix(fileName, &inputs, &outputs);
+	file_to_matrix2(fileName, &inputs, &outputs);
 	
-	printf("Inputs:\n");
-	matrix_print(&inputs, stdout);
-	printf("Outputs\n");
-	matrix_print(&outputs, stdout);
+	/* printf("Inputs:\n"); */
+	/* matrix_print(&inputs, stdout); */
+	/* printf("Outputs\n"); */
+	/* matrix_print(&outputs, stdout); */
+
+	matrix_free(&inputs);
+	matrix_free(&outputs);
 	
 	return 0;
 }

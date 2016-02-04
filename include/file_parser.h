@@ -11,6 +11,7 @@
  * equal to the number of comma-separated values in each row 
  */
 void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs);
+void file_to_matrix2(char *fileName, Matrix *inputs, Matrix *outputs);
 
 /* Return the number of lines in the file at the parameterized path */
 int count_lines(char *fileName);

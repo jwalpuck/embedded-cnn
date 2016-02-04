@@ -43,6 +43,7 @@ void nn_free(Neural_Network *net) {
       for(i = 0; i < net->numHiddenLayers + 1; i++) {
 	matrix_free(&(net->weights[i]));
       }
+      free(net->weights);
     }
   }
 }
@@ -146,6 +147,8 @@ Matrix nn_forward(Neural_Network *net, Matrix *inputs) {
     //m2->weights == null
   }
 
+  matrix_free(&temp_inputs);
+
   return metro1;
 }
 
@@ -154,14 +157,6 @@ Matrix nn_forward(Neural_Network *net, Matrix *inputs) {
 Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matrix *a) {
   int i;
   Matrix metro1, metro2, temp_inputs; //The matrices that will traverse the network
-  /* Matrix *z, *a; */
-
-  /* z = malloc(sizeof(Matrix) * net->numHiddenLayers + 1); */
-  /* a = malloc(sizeof(Matrix) * (net->numHiddenLayers)); */
-  /* *zloc = z; */
-  /* *aloc = a; */
-  //z = *zloc;
-  //a = *aloc;
   
   for(i = 0; i < net->numHiddenLayers + 1; i++) {
     z[i] = emptyMatrix; //This may be a problem. If so, use macro instead
@@ -207,8 +202,9 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matri
       //printf("copied matrix a: %dx%d\n", a[i].rows, a[i].cols);
     }
     matrix_copy(&metro1, &metro2);
+    matrix_free(&metro2);
   }
-  //printf("Returning\n");
+  matrix_free(&temp_inputs);
   return metro1;
 }
 

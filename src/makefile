@@ -43,13 +43,13 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 # patterns for compiling source code
 # $< is the file that caused the action to occur
 $(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -g -c -o $@ $< $(CFLAGS)
 
 $(ODIR)/%.o: %.C $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -g -c -o $@ $< $(CFLAGS)
 
 $(ODIR)/%.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -g -c -o $@ $< $(CFLAGS)
 
 
 all:
@@ -58,25 +58,25 @@ all:
 
 # put the specific executable rules here
 matrix_test: $(ODIR)/matrix_test.o
-	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 matrix_test2: $(ODIR)/matrix_test2.o
-	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 nn_structureTest: $(ODIR)/nn_structureTest.o
-	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 nn_forwardPropTest: $(ODIR)/nn_forwardPropTest.o
-	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 gradient_test: $(ODIR)/gradient_test.o
-	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 file_parserTest: $(ODIR)/file_parserTest.o
-	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 arithmetic_test: $(ODIR)/arithmetic_test.o
-	$(CC) -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS)
 
 .PHONY: clean
 

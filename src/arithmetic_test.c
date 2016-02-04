@@ -15,7 +15,7 @@
 int main(int argc, char *argv[]) {
   int i, j;
   Neural_Network test;
-  int numHiddenLayers = 4;
+  int numHiddenLayers = 2;
   int inputLayerSize = 2;
   int outputLayerSize = 1;
   //int numInputTuples;
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
 	
   trainingFileName = argv[1];
   testFileName = argv[2];
-  file_to_matrix(trainingFileName, &input, &expected_output);
-  file_to_matrix(testFileName, &input2, &expected_output2);
+  file_to_matrix2(trainingFileName, &input, &expected_output);
+  file_to_matrix2(testFileName, &input2, &expected_output2);
 	
   // 	printf("\n\nMatrices:\n");
   // 	printf("Input1:\n");
@@ -56,14 +56,14 @@ int main(int argc, char *argv[]) {
 
   //Assign hidden layer sizes
   int *hiddenLayerSizes = malloc(sizeof(int) * numHiddenLayers);
-  hiddenLayerSizes[0] = 3;
-  hiddenLayerSizes[1] = 4;
-  hiddenLayerSizes[2] = 8;
-  hiddenLayerSizes[3] = 2;
-  //hiddenLayerSizes[4] = 12;
-  //hiddenLayerSizes[5] = 9;
+  hiddenLayerSizes[0] = 2;
+  hiddenLayerSizes[1] = 3;
+  /* hiddenLayerSizes[2] = 2; */
+  /* hiddenLayerSizes[3] = 2; */
+  /* hiddenLayerSizes[4] = 2; */
+  /* hiddenLayerSizes[5] = 2; */
   /* hiddenLayerSizes[6] = 2; */
-  /* hiddenLayerSizes[7] = 10; */
+  /* hiddenLayerSizes[7] = 2; */
 
   /**** Test generating random weights ****/
   //Initialize the neural network with assigned parameters
@@ -100,22 +100,21 @@ int main(int argc, char *argv[]) {
   testInitialCost = cost_fn(&test, &input2, &expected_output2);
   
   printf("%%%%%%Original weights:\n");
-  for(j = 0; j < 4; j++) {
-    matrix_print(&(test.weights[j]), stdout);
+  for(j = 0; j < numHiddenLayers+1; j++) {
+    //matrix_print(&(test.weights[j]), stdout);
   } 
-
-  printf("Input matrix size: %dx%d; Output matrix size: %dx%d\n", input.rows, input.cols, expected_output.rows, expected_output.cols);
   
-  for(i = 0; i < 10000; i++) { //100000
+  for(i = 0; i < 5; i++) { //100000
 
     //Report average yhat
     if(i % 100 == 0) {
       avg_yhat = 0;
+      testOutput = nn_forward(&test, &input2);
       for(j = 0; j < expected_output.rows; j++) {
-    	testOutput = nn_forward(&test, &input2);
     	avg_yhat += fabsf(expected_output2.m[j][0] - testOutput.m[j][0]);
       }
-      avg_yhat /= 1000;
+      matrix_free(&testOutput);
+      avg_yhat /= expected_output.rows;
       printf("Step %d: average error: %f(%.02f%%)\n", i, avg_yhat, avg_yhat * 100);
     }
 
@@ -134,9 +133,11 @@ int main(int argc, char *argv[]) {
     //     for(j = 0; j < 4; j++) {
     //     	matrix_print(&(test.weights[j]), stdout);
     //     }
-    
-    matrix_free(gradient); //Prevent memory leak
-    matrix_free(&testOutput);
+
+    for(j = 0; j < numHiddenLayers+1; j++) {
+      matrix_free(&gradient[j]); //Prevent memory leak
+    }
+    free(gradient);
   }
 
   //Compute the cost of the training data
@@ -157,7 +158,7 @@ int main(int argc, char *argv[]) {
   printf("Initial (test) cost: %f; Final (test) cost: %f\n", testInitialCost, testFinalCost);
 
   //*Optional: Show output
-  /* output2 = nn_forward(&test, &input); */
+  output2 = nn_forward(&test, &input);
   /* printf("With initial (random) weights: \n"); */
   /* matrix_print(&output1, stdout); */
   /* printf("With optimized weights: \n"); */
@@ -180,25 +181,24 @@ int main(int argc, char *argv[]) {
   avg_yhat /= 1000;
 
   printf("Average error: %f(%f\%%)\n", avg_yhat, avg_yhat*100);
+
+  //Display the weights off of first hidden layer
+  /* printf("Weights H1-->H2:\n"); */
+  /* matrix_print(&(test.weights[1]), stdout); */
   
   //Free the neural network
-  printf("Freeing neural net\n");
   nn_free(&test);
-  printf("Freeing input matrix 1\n");
   matrix_free(&input);
-  printf("Freeing input matrix 2\n");
   matrix_free(&input2);
-  printf("Freeing expected output matrix 1\n");
   matrix_free(&expected_output);
-  printf("Freeing expected output matrix 2\n");
-  printf("Freeing output1\n");
+  matrix_free(&expected_output2);
   matrix_free(&output1);
-  printf("Freeing output2\n");
-  //matrix_free(&output2);
+  matrix_free(&output2); //Only if showing output in Optional block above
+  matrix_free(&testOutput);
   
   //Free local variables
-  printf("Freeing yhat\n");
   free(yhat);
+  free(hiddenLayerSizes);
   printf("Done freeing -- exiting program\n");
 
   return 0;
