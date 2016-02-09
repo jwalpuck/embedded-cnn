@@ -34,7 +34,7 @@ void matrix_set(Matrix *mat, int r, int c, float v);
 /* Copy the src matrix into the dest matrix */
 void matrix_copy(Matrix *dest, Matrix *src);
 
-/* Transpose the matrix m in place */
+/* Transpose the matrix mat in place */
 void matrix_transpose(Matrix *mat);
 
 /* Normalize each column in the matrix individually */
@@ -58,10 +58,20 @@ float matrix_sum(Matrix *mat);
 /* Element-wise subtraction of two mxn matrices */
 Matrix matrix_subtract(Matrix *left, Matrix *right);
 
+/* Return an array of n matrices m = cur + (ratio*prev) where ratio is a scalar */
+void matrix_momentum(Matrix *cur, Matrix *prev, int n, float ratio);
+
 /* Append a column of ones to the end of the given matrix (in place) */
 void append_ones(Matrix *mat);
 
 /* Truncates the mat->rows'th row off of mat in place */
 void matrix_truncate_row(Matrix *mat);
+
+/* Returns the parameterized row of the given matrix as a 1xn matrix */
+Matrix get_nth_row(Matrix *mat, int rowIdx);
+
+/* Given matrices m1 and m2 with the same number of rows, shuffle the rows of the two matrices in place,
+ * maintaining the correspondence of row n in m1 to row n in m2 */
+void matrix_shuffle_rows(Matrix *m1, Matrix *m2);
 
 #endif

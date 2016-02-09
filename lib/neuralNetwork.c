@@ -12,8 +12,6 @@
 #include "neuralNetwork.h"
 #include "activation_fns.h"
 
-//#define EMPTY_MATRIX {0, 0, NULL}
-
 /* Initialize a neural network with the given structure */
 void nn_init(Neural_Network *net, int numInputs, int numOutputs, int numHiddenLayers,
 	     int *hiddenLayerSizes) {
@@ -29,10 +27,6 @@ void nn_init(Neural_Network *net, int numInputs, int numOutputs, int numHiddenLa
   net->weights = malloc(sizeof(Matrix) * (1 + net->numHiddenLayers));
   
   nn_generateWeights(net);
-  
-  for(i = 0; i < 1+net->numHiddenLayers; i++) {
-    printf("Matrix %d is %dx%d\n", i, net->weights[i].rows, net->weights[i].cols);
-  }
 }
 
 /* Free the dynamically allocated memory in the neural network */
@@ -41,7 +35,7 @@ void nn_free(Neural_Network *net) {
     if(net->weights) {
       int i;
       for(i = 0; i < net->numHiddenLayers + 1; i++) {
-	matrix_free(&(net->weights[i]));
+				matrix_free(&(net->weights[i]));
       }
       free(net->weights);
     }
@@ -97,9 +91,9 @@ void nn_generateWeights(Neural_Network *net) {
     matrix_init(&(net->weights[i+1]), rows, cols);
     for(j = 0; j < rows; j++) {
       for(k = 0; k < cols; k++) {	
-	//Generate a random weight in [0, upperBound]
-	randWeight = ((float)rand()/(float)(RAND_MAX/upperBound) * 2) - upperBound;
-	net->weights[i+1].m[j][k] = randWeight;
+				//Generate a random weight in [0, upperBound]
+				randWeight = ((float)rand()/(float)(RAND_MAX/upperBound) * 2) - upperBound;
+				net->weights[i+1].m[j][k] = randWeight;
       }
     }
   }
@@ -159,8 +153,7 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matri
   Matrix metro1, metro2, temp_inputs; //The matrices that will traverse the network
   
   for(i = 0; i < net->numHiddenLayers + 1; i++) {
-    z[i] = emptyMatrix; //This may be a problem. If so, use macro instead
-    //#define EMPTY_MATRIX {0, 0, NULL}
+    z[i] = emptyMatrix;
     if(i != net->numHiddenLayers) {
       a[i] = emptyMatrix;
     }
@@ -199,7 +192,6 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matri
       	append_ones(&metro2); //Homogeneous coordinates for biases
       }
       matrix_copy(&a[i], &metro2);
-      //printf("copied matrix a: %dx%d\n", a[i].rows, a[i].cols);
     }
     matrix_copy(&metro1, &metro2);
     matrix_free(&metro2);
@@ -212,11 +204,9 @@ Matrix nn_forward_activity(Neural_Network *net, Matrix *inputs, Matrix *z, Matri
 void nn_updateWeights(Neural_Network *net, Matrix *gradients, float learningRate) {
   int i, j, n;
   for(n = 0; n < net->numHiddenLayers + 1; n++) {
-    //printf("Layer %d, net: %dx%d, gradient: %dx%d\n", n, net->weights[n].rows, net->weights[n].cols, gradients[n].rows, gradients[n].cols);
     for(i = 0; i < gradients[n].rows; i++) {
       for(j = 0; j < gradients[n].cols; j++) {
-	//printf("%f - %f\n", net->weights[n].m[i][j], gradients[n].m[i][j]);
-	net->weights[n].m[i][j] -= (gradients[n].m[i][j] * learningRate);
+				net->weights[n].m[i][j] -= (gradients[n].m[i][j] * learningRate);
       }
     }
   }

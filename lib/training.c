@@ -58,17 +58,6 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
   //Equation: delta_n = -(y-yhat) .* sig_prime(z_n) :: element-wise multiplication
   delta[net->numHiddenLayers] = matrix_element_multiply(&difference,
   							&z[net->numHiddenLayers]);
-  //DEBUG----------------------------
-  /* printf("after assignment %p\n", &delta[net->numHiddenLayers]); */
-  /* printf("delta = %p\n", delta); */
-  /* //matrix_print(&delta[net->numHiddenLayers], stdout); */
-  /* printf("Freeing matrix\n"); */
-  /* matrix_free(&delta[net->numHiddenLayers]); */
-  /* printf("Freeing delta\n"); */
-  /* free(delta); */
-  /* printf("Freed delta\n"); */
-  /* exit(-1); */
-  //End debug------------------------
   
   matrix_transpose(&a[net->numHiddenLayers-1]);
   //Equation: dCdW_n-1 = a_n-1.T * delta_n
@@ -134,5 +123,86 @@ Matrix *cost_fn_prime(Neural_Network *net, Matrix *inputs, Matrix *correct_outpu
   free(z);
   free(a);
   return dCdW;
-}						     
-						     
+}				
+		     
+/* Calculates a new set of weights for the given Neural Network using the stochastic gradient
+ * descent optimization algorithm. The network is trained on the parameterized matrices of inputs
+ * and their corresponding correct outputs. The gradient will be recalculated n * numInputs times */						     
+void stochastic_grad_descent(Neural_Network *net, Matrix *inputs, Matrix *correct_outputs, int n, float learningRate) {
+  int i, j, count;
+  Matrix inputRow, outputRow, *gradients;
+
+	for(count = 0; count < n; count++) {
+		for(i = 0; i < inputs->rows; i++) {
+			//Get the i'th row from the input and output matrices
+			inputRow = get_nth_row(inputs, i);
+			outputRow = get_nth_row(correct_outputs, i);
+			
+			//Calculate the gradient for the i'th row
+			gradients = cost_fn_prime(net, &inputRow, &outputRow);
+			
+			//Update the weights of the neural network
+			nn_updateWeights(net, gradients, learningRate);
+			
+			matrix_free(&inputRow);
+			matrix_free(&outputRow);
+			for(j = 0; j < net->numHiddenLayers+1; j++) {
+      	matrix_free(&gradients[j]); //Prevent memory leak
+   		}
+    	free(gradients);
+		}
+		
+		if(n > 1) {
+			//Shuffle the rows of the training data before doing another gradient descent pass
+			matrix_shuffle_rows(inputs, correct_outputs);
+		}
+	}
+  
+}
+
+/* Calculates a new set of weights for the given Neural Network using the stochastic gradient
+ * descent optimization algorithm with momentum. The network is trained on the parameterized matrices 
+ * of inputs and their corresponding correct outputs. The gradient will be recalculated n * numInputs times */ 
+void stochastic_grad_descent_momentum(Neural_Network *net, Matrix *inputs, Matrix *correct_outputs, 
+																			int n, float learningRate, float momentumRatio) {
+	int i, j, count, gradSize;
+  Matrix inputRow, outputRow, *curGrad, *prevGrad;
+  gradSize = net->numHiddenLayers+1;
+  prevGrad = NULL;
+
+	for(count = 0; count < n; count++) {
+		for(i = 0; i < inputs->rows; i++) {
+			//Get the i'th row from the input and output matrices
+			inputRow = get_nth_row(inputs, i);
+			outputRow = get_nth_row(correct_outputs, i);
+			
+			//Calculate the gradient for the i'th row
+			curGrad = cost_fn_prime(net, &inputRow, &outputRow);
+			
+			//Perform the momentum calculation
+			if(i > 0) {
+				matrix_momentum(curGrad, prevGrad, gradSize, momentumRatio);
+			}
+			
+			//Update the weights of the neural network
+			nn_updateWeights(net, curGrad, learningRate);
+			
+			matrix_free(&inputRow);
+			matrix_free(&outputRow);
+			
+			if(i > 0) { //There is no prevGrad on the first iteration
+				for(j = 0; j < gradSize; j++) {
+					matrix_free(&prevGrad[j]); //Prevent memory leak
+				}
+				free(prevGrad);
+    	}
+    	prevGrad = curGrad; //Prepare momentum matrix for the next iteration
+		}
+		
+		if(n > 1) {
+			//Shuffle the rows of the training data before doing another gradient descent pass
+			matrix_shuffle_rows(inputs, correct_outputs);
+		}
+	}
+  
+}

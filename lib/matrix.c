@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 #include "matrix.h"
 
 //The size of a cache line
@@ -17,15 +18,10 @@
 void matrix_init(Matrix *mat, int rows, int cols) {
   int j;
 
-  //printf( "mat is %p, &(mat->rows) is %p, mat->rows %d, mat->m %p, &(mat->m) %p\n", mat, &(mat->rows), mat->rows, mat->m, &(mat->m) );
-
   mat->rows = rows;
   mat->cols = cols;
-
-  //printf("New dimensions: %dx%d\n", mat->rows, mat->cols);
   
   //Create an empty 2D array within the matrix
-  //printf("Attempting allocated at %p, %p\n", mat->m, mat);
   mat->m = malloc(sizeof(float *) * rows);
   for(j = 0; j < rows; j++) {
     mat->m[j] = calloc(cols, sizeof(float));
@@ -47,13 +43,13 @@ void matrix_print(Matrix *mat, FILE *fp) {
     fprintf(fp, "[");
     for(i = 0; i < mat->rows; i++) {
       for(j = 0; j < mat->cols; j++) {
-	fprintf(fp, "%.9f, ", mat->m[i][j]);
+				fprintf(fp, "%.9f, ", mat->m[i][j]);
       }
       if(i == mat->rows-1) {
-	fprintf(fp, "]]\n\n");
+				fprintf(fp, "]]\n\n");
       }
       else{
-	fprintf(fp, "]\n");
+				fprintf(fp, "]\n");
       }
     }
   }
@@ -73,15 +69,11 @@ void matrix_clear(Matrix *mat) {
 void matrix_free(Matrix *mat) {
   int i;
   if(mat->m){
-    //printf("Freeing %p\n", mat);
     for(i = 0; i < mat->rows; i++) {
       free(mat->m[i]); //For each row, free all of the columns
     }
-    //printf("Freeing outer array\n");
     free(mat->m); //Free the array of rows
-    //printf("Freed outer array\n");
     mat->m = NULL;
-    //printf("Freed\n");
   }
   mat->rows = 0;
   mat->cols = 0;
@@ -115,12 +107,13 @@ void matrix_copy(Matrix *dest, Matrix *src) {
   }
 }
 
-/* Transpose the SQUARE matrix m in place */
+/* Transpose the matrix mat in place */
 void matrix_transpose(Matrix *mat) {
   
   Matrix copy = emptyMatrix;
   int i, j;
   matrix_copy(&copy, mat);
+  
   //Change the dimensions of mat to be nxm instead of mxn
   matrix_free(mat);
   matrix_init(mat, copy.cols, copy.rows);
@@ -182,17 +175,17 @@ Matrix matrix_multiply_fast(Matrix *left, Matrix *right) {
   for(i = 0; i < left->rows; i += SM) {
     for(j = 0; j < N; j += SM) {
       for(k = 0; k < N; k += SM) {
-	for(i2 = 0, rmat = &mat.m[i][j], rleft = &left->m[i][k];
-	    i2 < SM;
-	    ++i2, rmat += fsize, rleft += fsize) {
-	  for(k2 = 0, rright = &right->m[k][j];
-	      k2 < SM;
-	      ++k2, rright += fsize) {
-	    for(j2 = 0; j2 < SM; ++j2) {
-	      rmat[j2] += rleft[k2] * rright[j2];
-	    }
-	  }
-	}
+				for(i2 = 0, rmat = &mat.m[i][j], rleft = &left->m[i][k];
+	    			i2 < SM;
+	    			++i2, rmat += fsize, rleft += fsize) {
+	  			for(k2 = 0, rright = &right->m[k][j];
+	      			k2 < SM;
+	     			 ++k2, rright += fsize) {
+	    			for(j2 = 0; j2 < SM; ++j2) {
+	      			rmat[j2] += rleft[k2] * rright[j2];
+	    			}
+	  			}
+				}
       }
     }
   }
@@ -202,7 +195,6 @@ Matrix matrix_multiply_fast(Matrix *left, Matrix *right) {
 
 /* Multiply left and right and put the result in mat */
 Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
-
   if(left->cols != right->rows) {
     printf("Dimensionality error: left %dx%d, right %dx%d\n", left->rows, left->cols, right->rows, right->cols);
     exit(-1);
@@ -217,11 +209,10 @@ Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
   for(i = 0; i < left->rows; i++) {
     for(j = 0; j < right->cols; j++) {
       for(k = 0; k < right->rows; k++) {
-  	mat.m[i][j] += left->m[i][k] * temp.m[j][k];
+  			mat.m[i][j] += left->m[i][k] * temp.m[j][k];
       }
     }
   }
-
   matrix_free(&temp);
   
   return mat;
@@ -272,6 +263,23 @@ Matrix matrix_subtract(Matrix *left, Matrix *right) {
   return ret;
 }
 
+/* Return an array of n matrices m = cur + (ratio*prev) where ratio is a scalar */
+void matrix_momentum(Matrix *cur, Matrix *prev, int n, float ratio) {
+	if(cur->rows != prev->rows || cur->cols != prev->cols) {
+		printf("Error: gradients of differing size\n");
+		exit(-1);
+	}
+	int i, j, count;
+	
+	for(count = 0; count < n; count++) { //For each matrix in the gradient array
+		for(i = 0; i < cur->rows; i++) {
+      for(j = 0; j < cur->cols; j++) {
+				cur[count].m[i][j] += (prev[count].m[i][j] * ratio);
+      }
+    }
+	}
+}
+
 /* Append a column of ones to the end of the given matrix (in place) */
 void append_ones(Matrix *mat) {
   int i, j;
@@ -292,4 +300,69 @@ void append_ones(Matrix *mat) {
 void matrix_truncate_row(Matrix *mat) {
 	free(mat->m[mat->rows-1]);
 	mat->rows--;
+}
+
+/* Returns the parameterized row of the given matrix as a 1xn matrix */
+Matrix get_nth_row(Matrix *mat, int rowIdx) {
+	int i;
+	Matrix row;
+	matrix_init(&row, 1, mat->cols);
+	for(i = 0; i < mat->cols; i++) {
+		row.m[0][i] = mat->m[rowIdx][i];
+	}
+	return row;
+}
+
+/* Given matrices m1 and m2 with the same number of rows, shuffle the rows of the two matrices in place,
+ * maintaining the correspondence of row n in m1 to row n in m2 */
+void matrix_shuffle_rows(Matrix *m1, Matrix *m2) {
+	//Verify input
+	if(m1->rows != m2->rows) {
+		printf("Error: attempting to shuffle two matrices with different numbers of rows, exiting\n");
+		exit(-1);
+	}
+	int i, j, randIdx, temp, numRows, *sequence;
+	Matrix t1, t2; //Matrices to temporarily hold shuffle versions of m1 and m2
+	
+	numRows = m1->rows;
+	sequence = malloc(sizeof(int) * numRows);
+	matrix_init(&t1, m1->rows, m1->cols);
+	matrix_init(&t2, m2->rows, m2->cols);
+	
+	//Randomize the order of the shuffle to be different each time
+	srand(time(NULL));
+	
+	for(i = 0; i < numRows; i++) {
+		sequence[i] = i;
+	}
+	
+	//Shuffle the array of indices
+	for(int i = numRows-1; i > 0; i--) {
+		//Generate random index
+		randIdx = rand()%i;
+		
+		//Swap array elements with each other
+		temp = sequence[i];
+		sequence[i] = sequence[randIdx];
+		sequence[randIdx] = temp;
+	}
+	
+	//Move the rows from the input matrices to the temp matrices given the randomized sequence of indices
+	for(i = 0; i < numRows; i++) {
+		for(j = 0; j < m1->cols; j++) {
+			t1.m[i][j] = m1->m[sequence[i]][j];	
+		}
+		for(j = 0; j < m2->cols; j++) {
+			t2.m[i][j] = m2->m[sequence[i]][j];
+		}
+	}
+	
+	//Copy the shuffled matrices back into their original structs
+	matrix_copy(m1, &t1);
+	matrix_copy(m2, &t2);
+		
+	//Clean up
+	free(sequence);
+	matrix_free(&t1);
+	matrix_free(&t2);
 }

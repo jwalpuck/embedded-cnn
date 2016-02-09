@@ -15,7 +15,6 @@
  * equal to the number of comma-separated values in each row 
  */
 void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs) {
-  printf("RECOMPILED2\n");
   int i, j, k, numLines, inputCols, outputCols;
   char ***split_colon, ***input_text, ***output_text, **raw_text, *running_start, *running, *token;
   inputCols = 0;
@@ -41,10 +40,10 @@ void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs) {
     for(j = 0; j < 3; j++) {
       token = strsep(&running, ":");
       if(token) {
-	split_colon[i][j] = token;
+				split_colon[i][j] = token;
       }
     }
-    free(running_start);
+    //free(running_start);
   }
 	
   //How many columns in the input matrix?
@@ -56,7 +55,7 @@ void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs) {
       inputCols++;
     }
   } while(token);
-  free(running_start);
+  //free(running_start);
 	
   //How many columns in the output matrix?
   running = strdup(split_colon[0][1]);
@@ -67,7 +66,7 @@ void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs) {
       outputCols++;
     }
   } while(token);
-  free(running_start);
+  //free(running_start);
 	
   //Split the sub-lines at ','
   for(i = 0; i < numLines; i++) { //For each line in the file
@@ -86,7 +85,7 @@ void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs) {
     else {
       input_text[i][0] = running;
     }
-    free(running_start);
+    //free(running_start);
     
     //For the right side of the colon (outputs)
     output_text[i] = malloc(sizeof(char *) * outputCols);
@@ -103,13 +102,13 @@ void file_to_matrix(char *fileName, Matrix *inputs, Matrix *outputs) {
     else {
       output_text[i][0] = running;
     }
-    free(running_start);
+    //free(running_start);
   }
 	
   //Fill the matrices, converting strings to numbers
-  printf("Initializing inputs\n");
+  //printf("Initializing inputs\n");
   matrix_init(inputs, numLines, inputCols);
-  printf("Initializing outputs\n");
+  //printf("Initializing outputs\n");
   matrix_init(outputs, numLines, outputCols);
 	
   for(i = 0; i < numLines; i++) {
