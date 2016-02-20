@@ -15,9 +15,6 @@
 /* Initialize a neural network with the given structure */
 void nn_init(Neural_Network *net, int numInputs, int numOutputs, int numHiddenLayers,
 	     int *hiddenLayerSizes) {
-  
-  int i;
-  
   net->inputLayerSize = numInputs;
   net->outputLayerSize = numOutputs;
   net->numHiddenLayers = numHiddenLayers;

@@ -74,4 +74,10 @@ Matrix get_nth_row(Matrix *mat, int rowIdx);
  * maintaining the correspondence of row n in m1 to row n in m2 */
 void matrix_shuffle_rows(Matrix *m1, Matrix *m2);
 
+/* Convolve matrix m2 over m1 and return the result in a new matrix */
+Matrix matrix_convolution(Matrix *m1, Matrix *m2);
+
+/* Pool the result of the convolution with dimxdim non-overlapping neighborhoods */
+void matrix_pool(Matrix *mat, int dim);
+
 #endif

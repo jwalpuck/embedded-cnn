@@ -366,3 +366,60 @@ void matrix_shuffle_rows(Matrix *m1, Matrix *m2) {
 	matrix_free(&t1);
 	matrix_free(&t2);
 }
+
+/* Convolve matrix m2 over m1 and return the result in a new matrix */
+Matrix matrix_convolution(Matrix *m1, Matrix *m2) {
+	Matrix result;
+	int i, j, sub1, sub2, r_rows, r_cols;
+	
+	r_rows = m1->rows - m2->rows + 1;
+	r_cols = m1->cols - m2->cols + 1;
+	matrix_init(&result, r_rows, r_cols);
+	
+	for(i = 0; i < r_rows; i++) {
+		for(j = 0; j < r_cols; j++) {
+			for(sub1 = 0; sub1 < m2->rows; sub1++) {
+				for(sub2 = 0; sub2 < m2->cols; sub2++) {
+					result.m[i][j] += m1->m[i+sub1][j+sub2] * m2->m[sub1][sub2];
+				}
+			}
+		}
+	}
+	
+	return result;
+}
+
+/* Pool the result of the convolution with dimxdim non-overlapping neighborhoods */
+void matrix_pool(Matrix *mat, int dim) {
+	Matrix temp;
+	int rows, cols, i, j, sub1, sub2, max, cur;
+	rows = mat->rows % 2 == 0 ? mat->rows / 2 : (mat->rows / 2) + 1;
+	cols = mat->cols % 2 == 0 ? mat->cols / 2 : (mat->cols / 2) + 1;
+	matrix_init(&temp, rows, cols);
+	
+	for(i = 0; i < temp.rows; i++) {
+		for(j = 0; j < temp.cols; j++) {
+			max = -9999;
+			for(sub1 = 0; sub1 < dim; sub1++) {
+				for(sub2 = 0; sub2 < dim; sub2++) {
+					if(i+sub1 > temp.rows-1 || j+sub2 > temp.cols-1) {
+						continue;
+					}
+					else { //Look for a new max
+						cur = mat->m[i+sub1][j+sub2];
+						if(cur > max) {
+							max = cur;
+						}
+					}
+				}
+			}
+			//After the 2x2 neighborhood has been traversed, assign the max value to the result matrix
+			temp.m[i][j] = max;
+		}
+	}
+	//Copy the new matrix into the given address
+	matrix_copy(mat, &temp);
+	
+	//Clean up
+	matrix_free(&temp);
+}
