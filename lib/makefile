@@ -42,13 +42,13 @@ COMMON = $(patsubst %,$(ODIR)/%,$(_COMMON))
 
 # patterns for compiling source code
 $(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -g -c -o $@ $< $(CFLAGS)
+	$(CC) -g -c -o $@ $< $(CFLAGS) -lm
 
 $(ODIR)/%.o: %.C $(DEPS)
-	$(CC) -g -c -o $@ $< $(CFLAGS)
+	$(CC) -g -c -o $@ $< $(CFLAGS) -lm
 
 $(ODIR)/%.o: %.cpp $(DEPS)
-	$(CC) -g -c -o $@ $< $(CFLAGS)
+	$(CC) -g -c -o $@ $< $(CFLAGS) -lm
 
 # output library
 OUTPUT_LIB = libimageIO.a

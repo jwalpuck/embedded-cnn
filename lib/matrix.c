@@ -43,13 +43,13 @@ void matrix_print(Matrix *mat, FILE *fp) {
     fprintf(fp, "[");
     for(i = 0; i < mat->rows; i++) {
       for(j = 0; j < mat->cols; j++) {
-				fprintf(fp, "%.9f, ", mat->m[i][j]);
+	fprintf(fp, "%.9f, ", mat->m[i][j]);
       }
       if(i == mat->rows-1) {
-				fprintf(fp, "]]\n\n");
+	fprintf(fp, "]]\n\n");
       }
       else{
-				fprintf(fp, "]\n");
+	fprintf(fp, "]\n");
       }
     }
   }
@@ -128,29 +128,29 @@ void matrix_transpose(Matrix *mat) {
 
 /* Normalize each column in the matrix individually */
 void matrix_normalize_columns(Matrix *mat) {
-	int i, j;
-	float max[mat->cols];
+  int i, j;
+  float max[mat->cols];
 	
-	//Initialize max values with first row
-	for(j = 0; j < mat->cols; j++) {
-		max[j] = mat->m[0][j];
-	}
+  //Initialize max values with first row
+  for(j = 0; j < mat->cols; j++) {
+    max[j] = mat->m[0][j];
+  }
 	
-	//Search for max values
-	for(i = 1; i < mat->rows; i++) {
-		for(j = 0; j < mat->cols; j++) {
-			if(mat->m[i][j] > max[j]) {
-				max[j] = mat->m[i][j];
-			}
-		}
-	}
+  //Search for max values
+  for(i = 1; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      if(mat->m[i][j] > max[j]) {
+	max[j] = mat->m[i][j];
+      }
+    }
+  }
 	
-	//Divide all entries in the matrix by their column's maximum
-	for(i = 0; i < mat->rows; i++) {
-		for(j = 0; j < mat->cols; j++) {
-			mat->m[i][j] /= max[j];
-		}
-	}
+  //Divide all entries in the matrix by their column's maximum
+  for(i = 0; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      mat->m[i][j] /= max[j];
+    }
+  }
 }
 
 /* Negate all elements in the parameterized matrix */
@@ -175,17 +175,17 @@ Matrix matrix_multiply_fast(Matrix *left, Matrix *right) {
   for(i = 0; i < left->rows; i += SM) {
     for(j = 0; j < N; j += SM) {
       for(k = 0; k < N; k += SM) {
-				for(i2 = 0, rmat = &mat.m[i][j], rleft = &left->m[i][k];
-	    			i2 < SM;
-	    			++i2, rmat += fsize, rleft += fsize) {
-	  			for(k2 = 0, rright = &right->m[k][j];
-	      			k2 < SM;
-	     			 ++k2, rright += fsize) {
-	    			for(j2 = 0; j2 < SM; ++j2) {
-	      			rmat[j2] += rleft[k2] * rright[j2];
-	    			}
-	  			}
-				}
+	for(i2 = 0, rmat = &mat.m[i][j], rleft = &left->m[i][k];
+	    i2 < SM;
+	    ++i2, rmat += fsize, rleft += fsize) {
+	  for(k2 = 0, rright = &right->m[k][j];
+	      k2 < SM;
+	      ++k2, rright += fsize) {
+	    for(j2 = 0; j2 < SM; ++j2) {
+	      rmat[j2] += rleft[k2] * rright[j2];
+	    }
+	  }
+	}
       }
     }
   }
@@ -209,7 +209,7 @@ Matrix matrix_multiply_slow(Matrix *left, Matrix *right) {
   for(i = 0; i < left->rows; i++) {
     for(j = 0; j < right->cols; j++) {
       for(k = 0; k < right->rows; k++) {
-  			mat.m[i][j] += left->m[i][k] * temp.m[j][k];
+	mat.m[i][j] += left->m[i][k] * temp.m[j][k];
       }
     }
   }
@@ -263,21 +263,31 @@ Matrix matrix_subtract(Matrix *left, Matrix *right) {
   return ret;
 }
 
+/* Store the element-wise sum of keep and add inside keep */
+void matrix_add_inPlace(Matrix *keep, Matrix *add) {
+  int i, j;
+  for(i = 0; i < keep->rows; i++) {
+    for(j = 0; j < keep->cols; j++) {
+      keep->m[i][j] += add->m[i][j];
+    }
+  }
+}
+
 /* Return an array of n matrices m = cur + (ratio*prev) where ratio is a scalar */
 void matrix_momentum(Matrix *cur, Matrix *prev, int n, float ratio) {
-	if(cur->rows != prev->rows || cur->cols != prev->cols) {
-		printf("Error: gradients of differing size\n");
-		exit(-1);
-	}
-	int i, j, count;
+  if(cur->rows != prev->rows || cur->cols != prev->cols) {
+    printf("Error: gradients of differing size\n");
+    exit(-1);
+  }
+  int i, j, count;
 	
-	for(count = 0; count < n; count++) { //For each matrix in the gradient array
-		for(i = 0; i < cur->rows; i++) {
+  for(count = 0; count < n; count++) { //For each matrix in the gradient array
+    for(i = 0; i < cur->rows; i++) {
       for(j = 0; j < cur->cols; j++) {
-				cur[count].m[i][j] += (prev[count].m[i][j] * ratio);
+	cur[count].m[i][j] += (prev[count].m[i][j] * ratio);
       }
     }
-	}
+  }
 }
 
 /* Append a column of ones to the end of the given matrix (in place) */
@@ -298,128 +308,159 @@ void append_ones(Matrix *mat) {
 
 /* Truncates the mat->rows'th row off of mat in place */
 void matrix_truncate_row(Matrix *mat) {
-	free(mat->m[mat->rows-1]);
-	mat->rows--;
+  free(mat->m[mat->rows-1]);
+  mat->rows--;
 }
 
 /* Returns the parameterized row of the given matrix as a 1xn matrix */
 Matrix get_nth_row(Matrix *mat, int rowIdx) {
-	int i;
-	Matrix row;
-	matrix_init(&row, 1, mat->cols);
-	for(i = 0; i < mat->cols; i++) {
-		row.m[0][i] = mat->m[rowIdx][i];
-	}
-	return row;
+  int i;
+  Matrix row;
+  matrix_init(&row, 1, mat->cols);
+  for(i = 0; i < mat->cols; i++) {
+    row.m[0][i] = mat->m[rowIdx][i];
+  }
+  return row;
 }
 
 /* Given matrices m1 and m2 with the same number of rows, shuffle the rows of the two matrices in place,
  * maintaining the correspondence of row n in m1 to row n in m2 */
 void matrix_shuffle_rows(Matrix *m1, Matrix *m2) {
-	//Verify input
-	if(m1->rows != m2->rows) {
-		printf("Error: attempting to shuffle two matrices with different numbers of rows, exiting\n");
-		exit(-1);
-	}
-	int i, j, randIdx, temp, numRows, *sequence;
-	Matrix t1, t2; //Matrices to temporarily hold shuffle versions of m1 and m2
+  //Verify input
+  if(m1->rows != m2->rows) {
+    printf("Error: attempting to shuffle two matrices with different numbers of rows, exiting\n");
+    exit(-1);
+  }
+  int i, j, randIdx, temp, numRows, *sequence;
+  Matrix t1, t2; //Matrices to temporarily hold shuffle versions of m1 and m2
 	
-	numRows = m1->rows;
-	sequence = malloc(sizeof(int) * numRows);
-	matrix_init(&t1, m1->rows, m1->cols);
-	matrix_init(&t2, m2->rows, m2->cols);
+  numRows = m1->rows;
+  sequence = malloc(sizeof(int) * numRows);
+  matrix_init(&t1, m1->rows, m1->cols);
+  matrix_init(&t2, m2->rows, m2->cols);
 	
-	//Randomize the order of the shuffle to be different each time
-	srand(time(NULL));
+  //Randomize the order of the shuffle to be different each time
+  srand(time(NULL));
 	
-	for(i = 0; i < numRows; i++) {
-		sequence[i] = i;
-	}
+  for(i = 0; i < numRows; i++) {
+    sequence[i] = i;
+  }
 	
-	//Shuffle the array of indices
-	for(int i = numRows-1; i > 0; i--) {
-		//Generate random index
-		randIdx = rand()%i;
+  //Shuffle the array of indices
+  for(i = numRows-1; i > 0; i--) {
+    //Generate random index
+    randIdx = rand()%i;
 		
-		//Swap array elements with each other
-		temp = sequence[i];
-		sequence[i] = sequence[randIdx];
-		sequence[randIdx] = temp;
-	}
+    //Swap array elements with each other
+    temp = sequence[i];
+    sequence[i] = sequence[randIdx];
+    sequence[randIdx] = temp;
+  }
 	
-	//Move the rows from the input matrices to the temp matrices given the randomized sequence of indices
-	for(i = 0; i < numRows; i++) {
-		for(j = 0; j < m1->cols; j++) {
-			t1.m[i][j] = m1->m[sequence[i]][j];	
-		}
-		for(j = 0; j < m2->cols; j++) {
-			t2.m[i][j] = m2->m[sequence[i]][j];
-		}
-	}
+  //Move the rows from the input matrices to the temp matrices given the randomized sequence of indices
+  for(i = 0; i < numRows; i++) {
+    for(j = 0; j < m1->cols; j++) {
+      t1.m[i][j] = m1->m[sequence[i]][j];	
+    }
+    for(j = 0; j < m2->cols; j++) {
+      t2.m[i][j] = m2->m[sequence[i]][j];
+    }
+  }
 	
-	//Copy the shuffled matrices back into their original structs
-	matrix_copy(m1, &t1);
-	matrix_copy(m2, &t2);
+  //Copy the shuffled matrices back into their original structs
+  matrix_copy(m1, &t1);
+  matrix_copy(m2, &t2);
 		
-	//Clean up
-	free(sequence);
-	matrix_free(&t1);
-	matrix_free(&t2);
+  //Clean up
+  free(sequence);
+  matrix_free(&t1);
+  matrix_free(&t2);
 }
 
 /* Convolve matrix m2 over m1 and return the result in a new matrix */
 Matrix matrix_convolution(Matrix *m1, Matrix *m2) {
-	Matrix result;
-	int i, j, sub1, sub2, r_rows, r_cols;
+  Matrix result;
+  int i, j, sub1, sub2, r_rows, r_cols;
 	
-	r_rows = m1->rows - m2->rows + 1;
-	r_cols = m1->cols - m2->cols + 1;
-	matrix_init(&result, r_rows, r_cols);
+  r_rows = m1->rows - m2->rows + 1;
+  r_cols = m1->cols - m2->cols + 1;
+  matrix_init(&result, r_rows, r_cols);
 	
-	for(i = 0; i < r_rows; i++) {
-		for(j = 0; j < r_cols; j++) {
-			for(sub1 = 0; sub1 < m2->rows; sub1++) {
-				for(sub2 = 0; sub2 < m2->cols; sub2++) {
-					result.m[i][j] += m1->m[i+sub1][j+sub2] * m2->m[sub1][sub2];
-				}
-			}
-		}
+  for(i = 0; i < r_rows; i++) {
+    for(j = 0; j < r_cols; j++) {
+      for(sub1 = 0; sub1 < m2->rows; sub1++) {
+	for(sub2 = 0; sub2 < m2->cols; sub2++) {
+	  result.m[i][j] += m1->m[i+sub1][j+sub2] * m2->m[sub1][sub2];
 	}
+      }
+    }
+  }
 	
-	return result;
+  return result;
 }
 
 /* Pool the result of the convolution with dimxdim non-overlapping neighborhoods */
 void matrix_pool(Matrix *mat, int dim) {
-	Matrix temp;
-	int rows, cols, i, j, sub1, sub2, max, cur;
-	rows = mat->rows % 2 == 0 ? mat->rows / 2 : (mat->rows / 2) + 1;
-	cols = mat->cols % 2 == 0 ? mat->cols / 2 : (mat->cols / 2) + 1;
-	matrix_init(&temp, rows, cols);
-	
-	for(i = 0; i < temp.rows; i++) {
-		for(j = 0; j < temp.cols; j++) {
-			max = -9999;
-			for(sub1 = 0; sub1 < dim; sub1++) {
-				for(sub2 = 0; sub2 < dim; sub2++) {
-					if(i+sub1 > temp.rows-1 || j+sub2 > temp.cols-1) {
-						continue;
-					}
-					else { //Look for a new max
-						cur = mat->m[i+sub1][j+sub2];
-						if(cur > max) {
-							max = cur;
-						}
-					}
-				}
-			}
-			//After the 2x2 neighborhood has been traversed, assign the max value to the result matrix
-			temp.m[i][j] = max;
-		}
+  Matrix temp;
+  int rows, cols, i, j, sub1, sub2, max, cur;
+  rows = mat->rows % 2 == 0 ? mat->rows / 2 : (mat->rows / 2) + 1;
+  cols = mat->cols % 2 == 0 ? mat->cols / 2 : (mat->cols / 2) + 1;
+  matrix_init(&temp, rows, cols);
+
+  //DEBUG
+  /* printf("input mat dimensions: %dx%d\n", mat->rows, mat->cols); */
+  /* printf("output mat dimensions: %dx%d\n", temp.rows, temp.cols); */
+
+  for(i = 0; i < temp.rows; i++) {
+    for(j = 0; j < temp.cols; j++) {
+      max = -9999;
+      for(sub1 = 0; sub1 < dim; sub1++) {
+	for(sub2 = 0; sub2 < dim; sub2++) {
+	  //printf("i = %d, j = %d, sub1 = %d, sub2 = %d\n", i, j, sub1, sub2);
+	  if((i*dim)+sub1 > mat->rows-1 || (j*dim)+sub2 > mat->cols-1) {
+	    continue;
+	  }
+	  else { //Look for a new max
+	    cur = mat->m[(i*dim)+sub1][(j*dim)+sub2];
+	    if(cur > max) {
+	      max = cur;
+	    }
+	  }
 	}
-	//Copy the new matrix into the given address
-	matrix_copy(mat, &temp);
+      }
+      //After the 2x2 neighborhood has been traversed, assign the max value to the result matrix
+      temp.m[i][j] = max;
+    }
+  }
+  //Copy the new matrix into the given address
+  matrix_copy(mat, &temp);
 	
-	//Clean up
-	matrix_free(&temp);
+  //Clean up
+  matrix_free(&temp);
+}
+
+
+/* Return the maximum value from the input matrix */
+float matrix_max(Matrix *mat) {
+  int i, j;
+  float max = mat->m[0][0];
+
+  for(i = 0; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      if(mat->m[i][j] > max) {
+	max = mat->m[i][j];
+      }
+    }
+  }
+  return max;
+}
+
+/* Takes in an array of matrices of size n and returns an 1xn matrix where 
+   max.m[0][1] = max(mats[i]) */
+void matrix_arrayToMaxMat(Matrix *max, Matrix *mats, int n) {
+  int i;
+  matrix_init(max, 1, n);
+  for(i = 0; i < n; i++) {
+    max->m[0][i] = matrix_max(&mats[i]);
+  }
 }

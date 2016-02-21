@@ -58,6 +58,9 @@ float matrix_sum(Matrix *mat);
 /* Element-wise subtraction of two mxn matrices */
 Matrix matrix_subtract(Matrix *left, Matrix *right);
 
+/* Store the element-wise sum of keep and add inside keep */
+void matrix_add_inPlace(Matrix *keep, Matrix *add); 
+
 /* Return an array of n matrices m = cur + (ratio*prev) where ratio is a scalar */
 void matrix_momentum(Matrix *cur, Matrix *prev, int n, float ratio);
 
@@ -79,5 +82,12 @@ Matrix matrix_convolution(Matrix *m1, Matrix *m2);
 
 /* Pool the result of the convolution with dimxdim non-overlapping neighborhoods */
 void matrix_pool(Matrix *mat, int dim);
+
+/* Return the maximum value from the input matrix */
+float matrix_max(Matrix *mat);
+
+/* Takes in an array of matrices of size n and returns an nx1 matrix where 
+   max.m[i][0] = max(mats[i]) */
+void matrix_arrayToMaxMat(Matrix *max, Matrix *mats, int n);
 
 #endif
