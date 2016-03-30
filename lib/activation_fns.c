@@ -55,3 +55,47 @@ void sigmoidPrime_matrix(Matrix *mat) {
     }
   }
 }
+
+/* Apply the tanh function to all elements in the input matrix mat */
+void tanh_matrix(Matrix *mat) {
+  int i, j;
+
+  for(i = 0; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      mat->m[i][j] = tanh(mat->m[i][j]);
+    }
+  }
+}
+
+/* Apply the tanh prime function to all elements in the input matrix mat:
+   Eq: tanh(x)' = sec^2(x) */
+void tanhPrime_matrix(Matrix *mat) { 
+  int i, j;
+  float sec_term;
+  for(i = 0; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      sec_term = (1/cosh(mat->m[i][j])) * (1/cosh(mat->m[i][j]));
+      mat->m[i][j] = sec_term;
+    }
+  }
+}
+
+/* Apply the softmax function to all elements in the input matrix mat */
+void softmax_matrix(Matrix *mat) {
+  int i, j;
+  float sum = 0;
+  
+  //First calculate the sum of all exp terms in the matrix
+  for(i = 0; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      sum += pow(M_E, mat->m[i][j]);
+    }
+  }
+
+  //Normalize
+  for(i = 0; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      mat->m[i][j] = pow(M_E, mat->m[i][j]) / sum;
+    }
+  }
+}

@@ -37,6 +37,9 @@ void matrix_copy(Matrix *dest, Matrix *src);
 /* Transpose the matrix mat in place */
 void matrix_transpose(Matrix *mat);
 
+/* Normalize all of the matrix by one central max value */
+void matrix_normalize_all(Matrix *mat);
+
 /* Normalize each column in the matrix individually */
 void matrix_normalize_columns(Matrix *mat);
 
@@ -80,8 +83,19 @@ void matrix_shuffle_rows(Matrix *m1, Matrix *m2);
 /* Convolve matrix m2 over m1 and return the result in a new matrix */
 Matrix matrix_convolution(Matrix *m1, Matrix *m2);
 
+/* Convolve matrix m2 with its rows and columns flipped over m1 and return the result
+   in a new matrix */
+Matrix matrix_tilde_convolution(Matrix *m1, Matrix *m2);
+
+/* Convolve matrix m2 over m1 with zero padding and return the result in a new matrix */
+Matrix matrix_zeroPad_convolution(Matrix *m1, Matrix *m2);
+
 /* Pool the result of the convolution with dimxdim non-overlapping neighborhoods */
 void matrix_pool(Matrix *mat, int dim);
+
+/* Pool the result of the convolution with dimxdim non-overlapping neighborhoods 
+   and store the results in the given Matrix reference */
+void matrix_pool_storeIndices(Matrix *mat, int dim, Matrix *indices);
 
 /* Return the maximum value from the input matrix */
 float matrix_max(Matrix *mat);
@@ -89,5 +103,12 @@ float matrix_max(Matrix *mat);
 /* Takes in an array of matrices of size n and returns an nx1 matrix where 
    max.m[i][0] = max(mats[i]) */
 void matrix_arrayToMaxMat(Matrix *max, Matrix *mats, int n);
+
+/* Takes in an array with n matrices and returns a 1xn matrix where
+   max.m[0][i] = max(mats[i])
+   
+   Also stores the indices of the max value of each matrix in a 1x2 matrix stored
+   in a pre-allocated block of memory */
+void matrix_arrayToMaxMat_storeIndices(Matrix *max, Matrix *mats, int n, Matrix *max_idxs);
 
 #endif

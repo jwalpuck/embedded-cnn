@@ -9,46 +9,43 @@
 #include "matrix.h"
 
 int main(int argc, char *argv[]) {
-  int i, j, sub1, sub2, r_rows, r_cols;
-  Matrix m, k, r;
+  Matrix m, k, r0, r1, r2;
 	
   matrix_init(&m, 3, 3);
   matrix_init(&k, 2, 2);
-  r_rows = m.rows-k.rows+1;
-  r_cols = m.cols-k.cols+1;
-  matrix_init(&r, m.rows-k.rows+1, m.cols-k.cols+1);
 	
   //Populate matrices
-  m.m[0][0] = 0;
-  m.m[0][1] = 80;
-  m.m[0][2] = 40;
-  m.m[1][0] = 20;
-  m.m[1][1] = 40;
-  m.m[1][2] = 0;
-  m.m[2][0] = 0;
-  m.m[2][1] = 0;
-  m.m[2][2] = 40;
+  m.m[0][0] = 1;
+  m.m[0][1] = 2;
+  m.m[0][2] = 3;
+  m.m[1][0] = 4;
+  m.m[1][1] = 5;
+  m.m[1][2] = 6;
+  m.m[2][0] = 7;
+  m.m[2][1] = 8;
+  m.m[2][2] = 9;
 	
   k.m[0][0] = 1;
-  k.m[0][1] = 0.5;
-  k.m[1][0] = .25;
-  k.m[1][1] = 0;
+  k.m[0][1] = 2;
+  k.m[1][0] = 3;
+  k.m[1][1] = 4;
 	
-  for(i = 0; i < r_rows; i++) {
-    for(j = 0; j < r_cols; j++) {
-      for(sub1 = 0; sub1 < k.rows; sub1++) {
-	for(sub2 = 0; sub2 < k.cols; sub2++) {
-	  r.m[i][j] += m.m[i+sub1][j+sub2] * k.m[sub1][sub2];
-	}
-      }
-    }
-  }
+  r0 = matrix_convolution(&m, &k);
+  printf("Calculated standard convolution\n");
+  r1 = matrix_tilde_convolution(&m, &k);
+  printf("Calculated tilde convolution\n");
+  r2 = matrix_zeroPad_convolution(&m, &k);
+  printf("Calculated zero-padded convolution\n");
 	
   printf("Result of convolution of:\n");
   matrix_print(&m, stdout);
   matrix_print(&k, stdout);
   printf("is\n");
-  matrix_print(&r, stdout);
+  matrix_print(&r0, stdout);
+  printf("Tilde convolution\n");
+  matrix_print(&r1, stdout);
+  printf("Zero-padded convolution\n");
+  matrix_print(&r2, stdout);
 
   return 0;
 }

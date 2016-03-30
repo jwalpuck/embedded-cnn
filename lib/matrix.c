@@ -42,8 +42,9 @@ void matrix_print(Matrix *mat, FILE *fp) {
     int i, j;
     fprintf(fp, "[");
     for(i = 0; i < mat->rows; i++) {
+      fprintf(fp, "[");
       for(j = 0; j < mat->cols; j++) {
-	fprintf(fp, "%.9f, ", mat->m[i][j]);
+	fprintf(fp, "%.3f, ", mat->m[i][j]);
       }
       if(i == mat->rows-1) {
 	fprintf(fp, "]]\n\n");
@@ -124,6 +125,19 @@ void matrix_transpose(Matrix *mat) {
     }
   }
   matrix_free(&copy);
+}
+
+/* Normalize all of the matrix by one central max value */
+void matrix_normalize_all(Matrix *mat) {
+  int i, j;
+  float max;
+
+  max = matrix_max(mat);
+  for(i = 0; i < mat->rows; i++) {
+    for(j = 0; j < mat->cols; j++) {
+      mat->m[i][j] /= max;
+    }
+  } 
 }
 
 /* Normalize each column in the matrix individually */
@@ -254,6 +268,8 @@ Matrix matrix_subtract(Matrix *left, Matrix *right) {
   int i, j;
   Matrix ret;
   matrix_init(&ret, left->rows, left->cols);
+  
+  //printf("M1: %dx%d, M2: %dx%d\n", left->rows, left->cols, right->rows, right->cols);
 
   for(i = 0; i < ret.rows; i++) {
     for(j = 0; j < ret.cols; j++) {
@@ -381,6 +397,12 @@ void matrix_shuffle_rows(Matrix *m1, Matrix *m2) {
 Matrix matrix_convolution(Matrix *m1, Matrix *m2) {
   Matrix result;
   int i, j, sub1, sub2, r_rows, r_cols;
+
+  if(m1->rows == 0 || m1->cols == 0 || m2->rows == 0 || m2->cols == 0) {
+    printf("ERROR: ATTEMPTING TO CONVOLVE WITH EMPTY MATRIX:\n");
+    printf("M1 DIM: %dx%d, M2 DIM: %dx%d\n", m1->rows, m1->cols, m2->rows, m2->cols);
+    exit(-1);
+  }
 	
   r_rows = m1->rows - m2->rows + 1;
   r_cols = m1->cols - m2->cols + 1;
@@ -396,6 +418,71 @@ Matrix matrix_convolution(Matrix *m1, Matrix *m2) {
     }
   }
 	
+  return result;
+}
+
+/* Convolve matrix m2 with its rows and columns flipped over m1 and return the result
+   in a new matrix */
+Matrix matrix_tilde_convolution(Matrix *m1, Matrix *m2) {
+  Matrix result;
+  int i, j, sub1, sub2, r_rows, r_cols;
+
+  if(m1->rows == 0 || m1->cols == 0 || m2->rows == 0 || m2->cols == 0) {
+    printf("ERROR: ATTEMPTING TO CONVOLVE WITH EMPTY MATRIX:\n");
+    printf("M1 DIM: %dx%d, M2 DIM: %dx%d\n", m1->rows, m1->cols, m2->rows, m2->cols);
+    exit(-1);
+  }
+
+  /* printf("TILDE CONVOLUTION OF:\n"); */
+  /* matrix_print(m1, stdout); */
+  /* matrix_print(m2, stdout); */
+
+  r_rows = m1->rows - m2->rows + 1;
+  r_cols = m1->cols - m2->cols + 1;
+  //printf("RESULT DIMENSIONS: %d, %d\n", r_rows, r_cols);
+  matrix_init(&result, r_rows, r_cols);
+
+  for(i = 0; i < r_rows; i++) {
+    for(j = 0; j < r_cols; j++) {
+      for(sub1 = 0; sub1 < m2->rows; sub1++) {
+	for(sub2 = 0; sub2 < m2->cols; sub2++) {
+	  result.m[i][j] += m1->m[i+sub1][j+sub2] * m2->m[m2->rows-sub1-1][m2->rows-sub2-1];
+	}
+      } 
+    }
+  }
+
+  return result;
+}
+
+/* Convolve matrix m2 over m1 with zero padding and return the result in a new matrix */
+Matrix matrix_zeroPad_convolution(Matrix *m1, Matrix *m2) {
+  Matrix result;
+  int i, j, sub1, sub2, r_rows, r_cols, x, y, xdiff, ydiff;
+
+  if(m1->rows == 0 || m1->cols == 0 || m2->rows == 0 || m2->cols == 0) {
+    printf("ERROR: ATTEMPTING TO CONVOLVE WITH EMPTY MATRIX:\n");
+    printf("M1 DIM: %dx%d, M2 DIM: %dx%d\n", m1->rows, m1->cols, m2->rows, m2->cols);
+    exit(-1);
+  }
+
+  ydiff = m2->rows-1;
+  xdiff = m2->cols-1;
+  
+  r_rows = m1->rows + ydiff;
+  r_cols = m1->cols + xdiff;
+  matrix_init(&result, r_rows, r_cols);
+
+  for(i = 0; i < r_rows; i++) {
+    for(j = 0; j < r_cols; j++) {
+      for(sub1 = i-ydiff, y = 0; y < m2->rows; sub1++, y++) {
+	for(sub2 = j-xdiff, x = 0; x < m2->cols; sub2++, x++) {
+	  result.m[i][j] += (sub1 >= 0 && sub2 >= 0) && (sub1 < m1->rows && sub2 < m1->cols) ? m1->m[sub1][sub2] * m2->m[y][x] : 0;
+	}
+      }
+    }
+  }
+
   return result;
 }
 
@@ -439,6 +526,59 @@ void matrix_pool(Matrix *mat, int dim) {
   matrix_free(&temp);
 }
 
+/* Pool the result of the convolution with dimxdim non-overlapping neighborhoods 
+   and store the results in the given Matrix reference */
+void matrix_pool_storeIndices(Matrix *mat, int dim, Matrix *indices) {
+  Matrix temp, tempIndices;
+  int rows, cols, i, j, sub1, sub2, max, cur, max_idxs[2], idx_count;
+  rows = mat->rows % 2 == 0 ? mat->rows / 2 : (mat->rows / 2) + 1;
+  cols = mat->cols % 2 == 0 ? mat->cols / 2 : (mat->cols / 2) + 1;
+  //printf("Initializing...\n");
+  matrix_init(&temp, rows, cols);
+  //printf("Inter: %dx%d\n", rows, cols);
+  matrix_init(&tempIndices, rows*cols, 2); //One index tuple for each max value
+  //printf("Initialized\n");
+  max_idxs[0] = -9999;
+  max_idxs[1] = -9999;
+
+  //DEBUG
+  /* printf("input mat dimensions: %dx%d\n", mat->rows, mat->cols); */
+  /* printf("output mat dimensions: %dx%d\n", temp.rows, temp.cols); */
+
+  for(i = 0, idx_count = 0; i < temp.rows; i++) {
+    for(j = 0; j < temp.cols; j++, idx_count++) {
+      max = -9999;
+      for(sub1 = 0; sub1 < dim; sub1++) {
+	for(sub2 = 0; sub2 < dim; sub2++) {
+	  //printf("i = %d, j = %d, sub1 = %d, sub2 = %d\n", i, j, sub1, sub2);
+	  if((i*dim)+sub1 > mat->rows-1 || (j*dim)+sub2 > mat->cols-1) {
+	    continue;
+	  }
+	  else { //Look for a new max
+	    cur = mat->m[(i*dim)+sub1][(j*dim)+sub2];
+	    if(cur > max) {
+	      max = cur;
+	      max_idxs[0] = (i*dim)+sub1;
+	      max_idxs[1] = (j*dim)+sub2;
+	    }
+	  }
+	}
+      }
+      //After the 2x2 neighborhood has been traversed, assign the max value to the result matrix
+      temp.m[i][j] = max;
+      tempIndices.m[idx_count][0] = max_idxs[0];
+      tempIndices.m[idx_count][1] = max_idxs[1];
+    }
+  }
+  //Copy the new matrices into the given addresses
+  matrix_copy(mat, &temp);
+  matrix_copy(indices, &tempIndices);
+
+  //Clean up
+  matrix_free(&temp);
+  matrix_free(&tempIndices);
+}
+
 
 /* Return the maximum value from the input matrix */
 float matrix_max(Matrix *mat) {
@@ -456,11 +596,48 @@ float matrix_max(Matrix *mat) {
 }
 
 /* Takes in an array of matrices of size n and returns an 1xn matrix where 
-   max.m[0][1] = max(mats[i]) */
+   max.m[0][i] = max(mats[i]) */
 void matrix_arrayToMaxMat(Matrix *max, Matrix *mats, int n) {
   int i;
   matrix_init(max, 1, n);
   for(i = 0; i < n; i++) {
+    max->m[0][i] = matrix_max(&mats[i]);
+  }
+}
+
+/* Takes in an array with n matrices and returns a 1xn matrix where
+   max.m[0][i] = max(mats[i])
+   
+   Also stores the indices of the max value of each matrix in a 1x2 matrix stored
+   in a pre-allocated block of memory */
+void matrix_arrayToMaxMat_storeIndices(Matrix *max, Matrix *mats, int n, Matrix *max_idxs) {
+  int i, j, k, max_row, max_col;
+  float max_val;
+
+  max_row = -9999;
+  max_col = -9999;
+
+  matrix_init(max, 1, n);
+  //matrix_init(max, n, n);
+  for(i = 0; i < n; i++) {
+    //matrix_print(&mats[i], stdout);
+    matrix_init(&max_idxs[i], 1, 2);
+    max_val = -9999;
+    for(j = 0; j < mats[i].rows; j++) {
+      for(k = 0; k < mats[i].cols; k++) {
+	if(max_val < mats[i].m[j][k]) {
+	  max_val = mats[i].m[j][k];
+	  max_row = j;
+	  max_col = k;
+	}
+      }
+      max->m[0][i] = max_val;
+      /* for(j = 0; j < n; j++) { */
+      /* 	max->m[i][0] = max_val; */
+      /* } */
+      max_idxs[i].m[0][0] = max_row;
+      max_idxs[i].m[0][1] = max_col;
+    }
     max->m[0][i] = matrix_max(&mats[i]);
   }
 }

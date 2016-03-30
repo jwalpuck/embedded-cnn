@@ -28,13 +28,13 @@ LIBDIR =.
 BINDIR =../bin
 
 # put all of the relevant include files here
-_DEPS = matrix.h vector.h neuralNetwork.h activation_fns.h training.h file_parser.h my_timing.h conv_neuralNetwork.h
+_DEPS = matrix.h vector.h neuralNetwork.h activation_fns.h training.h file_parser.h my_timing.h conv_neuralNetwork.h mnist_parser.h
 
 # convert them to point to the right place
 DEPS = $(patsubst %,$(INCDIR)/%,$(_DEPS))
 
 # put a list of all the object files (with .o endings)
-_COMMON = matrix.o vector.o neuralNetwork.o activation_fns.o training.o file_parser.o my_timing.o conv_neuralNetwork.o
+_COMMON = matrix.o vector.o neuralNetwork.o activation_fns.o training.o file_parser.o my_timing.o conv_neuralNetwork.o mnist_parser.o
 
 # convert them to point to the right place
 COMMON = $(patsubst %,$(ODIR)/%,$(_COMMON))

@@ -203,7 +203,7 @@ void nn_updateWeights(Neural_Network *net, Matrix *gradients, float learningRate
   for(n = 0; n < net->numHiddenLayers + 1; n++) {
     for(i = 0; i < gradients[n].rows; i++) {
       for(j = 0; j < gradients[n].cols; j++) {
-				net->weights[n].m[i][j] -= (gradients[n].m[i][j] * learningRate);
+	net->weights[n].m[i][j] -= (gradients[n].m[i][j] * learningRate);
       }
     }
   }
