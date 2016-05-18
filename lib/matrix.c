@@ -489,7 +489,8 @@ Matrix matrix_zeroPad_convolution(Matrix *m1, Matrix *m2) {
 /* Pool the result of the convolution with dimxdim non-overlapping neighborhoods */
 void matrix_pool(Matrix *mat, int dim) {
   Matrix temp;
-  int rows, cols, i, j, sub1, sub2, max, cur;
+  int rows, cols, i, j, sub1, sub2;
+  float max, cur;
   rows = mat->rows % 2 == 0 ? mat->rows / 2 : (mat->rows / 2) + 1;
   cols = mat->cols % 2 == 0 ? mat->cols / 2 : (mat->cols / 2) + 1;
   matrix_init(&temp, rows, cols);
@@ -530,7 +531,8 @@ void matrix_pool(Matrix *mat, int dim) {
    and store the results in the given Matrix reference */
 void matrix_pool_storeIndices(Matrix *mat, int dim, Matrix *indices) {
   Matrix temp, tempIndices;
-  int rows, cols, i, j, sub1, sub2, max, cur, max_idxs[2], idx_count;
+  int rows, cols, i, j, sub1, sub2, max_idxs[2], idx_count;
+  float max, cur;
   rows = mat->rows % 2 == 0 ? mat->rows / 2 : (mat->rows / 2) + 1;
   cols = mat->cols % 2 == 0 ? mat->cols / 2 : (mat->cols / 2) + 1;
   //printf("Initializing...\n");

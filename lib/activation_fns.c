@@ -68,7 +68,7 @@ void tanh_matrix(Matrix *mat) {
 }
 
 /* Apply the tanh prime function to all elements in the input matrix mat:
-   Eq: tanh(x)' = sec^2(x) */
+   Eq: tanh(x)' = sech^2(x) */
 void tanhPrime_matrix(Matrix *mat) { 
   int i, j;
   float sec_term;
@@ -82,6 +82,8 @@ void tanhPrime_matrix(Matrix *mat) {
 
 /* Apply the softmax function to all elements in the input matrix mat */
 void softmax_matrix(Matrix *mat) {
+  printf("Matrix being normalized:\n");
+  matrix_print(mat, stdout);
   int i, j;
   float sum = 0;
   
@@ -91,6 +93,8 @@ void softmax_matrix(Matrix *mat) {
       sum += pow(M_E, mat->m[i][j]);
     }
   }
+
+  printf("Sum of exponential terms %f\n", sum);
 
   //Normalize
   for(i = 0; i < mat->rows; i++) {

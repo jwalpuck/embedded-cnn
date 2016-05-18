@@ -32,10 +32,10 @@ _DEPS = matrix.h vector.h neuralNetwork.h training.h file_parser.h conv_neuralNe
 DEPS = $(patsubst %,$(INCDIR)/%,$(_DEPS))
 
 # put a list of the executables here
-EXECUTABLES = matrix_test matrix_test2 matrix_test3 nn_structureTest nn_forwardPropTest gradient_test file_parserTest arithmetic_test conv_test cnn_structureTest cnn_forwardPropTest cnn_backPropTest mnist_parserTest cnn_mnistTest
+EXECUTABLES = matrix_test matrix_test2 matrix_test3 nn_structureTest nn_forwardPropTest gradient_test file_parserTest arithmetic_test conv_test cnn_structureTest cnn_forwardPropTest cnn_backPropTest mnist_parserTest cnn_mnistTest matrix_poolingTest cnn_mnistDebug
 
 # put a list of all the object files here for all executables (with .o endings)
-_OBJ = matrix_test.o matrix_test2.o matrix_test3.o nn_structureTest.o nn_forwardPropTest.o gradient_test.o file_parserTest.o arithmetic_test.o conv_test.o cnn_structureTest.o cnn_forwardPropTest.o cnn_backPropTest.o mnist_parserTest.o cnn_mnistTest.o
+_OBJ = matrix_test.o matrix_test2.o matrix_test3.o nn_structureTest.o nn_forwardPropTest.o gradient_test.o file_parserTest.o arithmetic_test.o conv_test.o cnn_structureTest.o cnn_forwardPropTest.o cnn_backPropTest.o mnist_parserTest.o cnn_mnistTest.o matrix_poolingTest.o cnn_mnistDebug.o
 
 # convert them to point to the right place
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
@@ -64,6 +64,9 @@ matrix_test2: $(ODIR)/matrix_test2.o
 	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS) -lm
 
 matrix_test3: $(ODIR)/matrix_test3.o
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS) -lm
+
+matrix_poolingTest: $(ODIR)/matrix_poolingTest.o
 	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS) -lm
 
 nn_structureTest: $(ODIR)/nn_structureTest.o
@@ -97,6 +100,9 @@ mnist_parserTest: $(ODIR)/mnist_parserTest.o
 	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS) -lm
 
 cnn_mnistTest: $(ODIR)/cnn_mnistTest.o
+	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS) -lm
+
+cnn_mnistDebug: $(ODIR)/cnn_mnistDebug.o
 	$(CC) -g -O0 -o $(BINDIR)/$@ $^ $(LFLAGS) $(LIBS) -lm
 
 .PHONY: clean
